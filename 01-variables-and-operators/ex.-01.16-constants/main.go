@@ -60,3 +60,7 @@ func main() {
 	fmt.Println("Book :", GetBook("1234-5678"))
 	fmt.Println("CD   :", GetCD("1234-5678"))
 }
+
+// In this exercise, we used constants to define values that don’t need to change while the code is running.
+// We declared then using a variety of notation options, some with the typeset and some without.
+// We declared a single constant and multiple constants in a single statement.
