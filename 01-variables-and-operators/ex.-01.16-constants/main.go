@@ -23,32 +23,32 @@ const (
 
 var cache map[string]string
 
-func SetBook(isbn string, title string) {
-	key := CacheKeyBook + isbn
-
+func cacheSet(key string, val string) {
 	if len(cache)+1 >= MaxCacheSize {
 		return
 	}
 
-	cache[key] = title
+	cache[key] = val
+}
+
+func SetBook(isbn string, title string) {
+	cacheSet(CacheKeyBook+isbn, title)
 }
 
 func SetCD(sku string, title string) {
-	key := CacheKeyCD + sku
+	cacheSet(CacheKeyCD+sku, title)
+}
 
-	if len(cache)+1 >= MaxCacheSize {
-		return
-	}
-
-	cache[key] = title
+func cacheGet(key string) string {
+	return cache[key]
 }
 
 func GetBook(isbn string) string {
-	return cache[CacheKeyBook+isbn]
+	return cacheGet(CacheKeyBook + isbn)
 }
 
 func GetCD(sku string) string {
-	return cache[CacheKeyCD+sku]
+	return cacheGet(CacheKeyCD + sku)
 }
 
 func main() {
