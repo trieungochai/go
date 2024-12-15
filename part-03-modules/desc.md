@@ -1,0 +1,1 @@
+A module serves as a repository for reusable code utilized by various applications. Whether large or small, a module enables efficient code organization and enhances reusability. In this section, you’ll learn how to create and manage modules effectively, leveraging packages and external modules to streamline your development process.
