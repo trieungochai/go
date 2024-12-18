@@ -67,3 +67,26 @@ package <packageName>
 ```
 
 All functions, types, and variables that are defined in the Go source file are accessible within that package. Though your package could spread across multiple files, it is all part of the same package. Internally, all code is accessible across the files. Simply stated, the code is visible within the package. Notice that not all of the code is visible outside of the package. The preceding snippet is from the official Go libraries. For a further explanation of the code, visit the links in the preceding Go snippet.
+
+---
+
+### Exported & Unexported Code
+
+- Exported means that variables, types, functions, and so on are visible from outside of the package. If a function, type, variable, and so on starts with an uppercase letter, it is exportable.
+- Unexported means it is only visible from inside the package. If it starts with a lowercase letter, it is unexportable.
+
+```
+NOTE
+It is good practice to only expose code that we want other packages to see. We should hide everything else that is not needed by external packages.
+```
+
+---
+
+### Main package
+
+There are 2 basic types of packages in Go: `executable` and `non-executable`.
+
+The main package is a special package. The main package is an executable package in Go. Logic that resides in this package may not be consumed by other packages.
+
+The main package requires there to be a `main()` function in its package. The `main()` function is the entry point for a Go executable. When you perform go build on the main package, it will compile the package and create a binary. The binary is created inside the directory where the main package is located. The name of the binary will be the name of the folder it resides in:
+![why-main-package-is-special](why-main-package-is-special.png)
