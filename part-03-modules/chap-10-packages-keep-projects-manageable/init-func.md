@@ -86,3 +86,9 @@ func main() {
 
 Running this code snippet will result in the following error:
 ![err-func-init](err-func-init.png)
+
+---
+
+### Executing multiple init() functions
+
+There can be more than one `init()` function in a package. This enables you to modularize your initialization for better code maintenance. For example, suppose you need to set up various files and database connections and repair the state of the environment your program will be executed in. Doing all that in one `init()` function would make it complicated for maintaining and debugging.
