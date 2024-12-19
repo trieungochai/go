@@ -13,7 +13,7 @@ func init() {
 	budgetCategories[3] = "Electricity"
 	budgetCategories[4] = "Retirement"
 	budgetCategories[5] = "Vacation"
-	budgetCategories[7] = "Grocercies"
+	budgetCategories[7] = "Groceries"
 	budgetCategories[8] = "Car Payment"
 }
 
