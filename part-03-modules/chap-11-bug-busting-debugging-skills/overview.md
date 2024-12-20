@@ -84,3 +84,48 @@ There is some basic debugging that we can perform to aid us in remediating or, a
 ![basic-debugging-methods](basic-debugging-methods.png)
 
 One of the first steps in debugging is to identify the general location of where the bug is in the code. Before you can start to analyze any data, we need to know where this bug is occurring. We do this by printing out markers in our code. Markers in our code are typically nothing more than print statements that help us to identify where we were in the program when the bug occurred. They are also used to narrow the scope of the location of the bug. Generally, this process involves placing a print statement with a message that shows us where we are in the code.
+
+---
+
+### Printing Go variable types
+
+Go provides this functionality through the use of a `%T` verb. Go is case-sensitive. A capital `%T` means the type of the variable, and a lowercase `%t` means the bool type:
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+type person struct {
+    lname string
+    age int
+    salary float64
+}
+
+func main() {
+    fname := "Joe"
+    grades := []int{100, 87, 67}
+    states := map[string]string{"KY": "Kentucky", "WV": "West Virginia", "VA": "Virginia"}
+    p := person{lname:"Lincoln", age:210, salary: 25000.00}
+    fmt.Printf("fname is of type %T\n", fname)
+    fmt.Printf("grades is of type %T\n", grades)
+    fmt.Printf("states is of type %T\n", states)
+    fmt.Printf("p is of type %T\n", p)
+}
+```
+
+Here are the results of the preceding code snippet:
+
+```
+fname is of type string
+grades is of type []int
+states is of type map[string]string
+p is of type main.person
+```
+
+The `%T` verb is used in each print statement to print the concrete type of the variable.
+
+We can also print out a Go syntax representation of the type using `%#v`. It is useful to be able to print out the Go representation of a variable.
+![syntax-representation-of-the-type](syntax-representation-of-the-type.png)
