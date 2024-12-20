@@ -6,3 +6,46 @@ The process of determining the cause of unintended behavior is called debugging.
 - <b>Unhandled errors</b>: Some developers may choose not to handle errors as they occur; for example, a file that is needed for the application to load configuration data is not found, not handling an error return for an invalid mathematical operation such as dividing by zero, or perhaps a connection to a server could not be established. If your program does not properly handle these and other types of errors, this can cause bugs.
 
 ![different-methods-to-debug-code](different-methods-to-debug-code.png)
+
+---
+
+## Formatting using `fmt`
+
+One of the uses of the fmt package is to display data to the console or to the filesystem, such as a text file, that will contain information that could be helpful in debugging the code.
+
+We have used the `fmt.Println()` function on numerous occasions.
+
+The `fmt.Println()` function places spaces between arguments passed to the function and then appends a newline character at the end of the string.
+Each type in Go has a default way that it is formatted when printed.
+
+For example, strings are printed as they are, and integers are printed in decimal format. The `fmt.Println()` function prints the default formats of arguments.
+
+---
+
+### Formatting using `fmt.Printf()`
+
+`fmt.Printf()` formats the string according to the verb and prints it to `stdout`. The `standard output (stdout)` is a stream for output. By default, the standard output is pointed to the terminal. The function uses something called format verbs, sometimes called a format specifier. The verbs tell the fmt function where to insert the variable.
+![explanation-of-Prinlf](explanation-of-Prinlf.png)
+
+The `fmt.Printf()` function does not add a new line to the end of the string that it prints. We must add a newline character in the string if we want to return the output with a new line:
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    fname := "Edward"
+    lname := "Scissorhands"
+    fmt.Printf("Hello my first name is %s\n", fname)
+    fmt.Printf("Hello my last name is %s", lname)
+}
+```
+
+In Go, you can escape characters using `\`. If you ever wanted to print the `\` character, then you’d put `fmt.Println("\\")` to escape the character. This tells us that a character should not be printed because it has a special meaning. When you use `\n`, it denotes a newline. We can place a newline anywhere within the string.
+
+The Go language has several printing verbs. We will introduce some basic verbs that are frequently used.
+
+![verbs-and-their-meanings](verbs-and-their-meanings.png)
