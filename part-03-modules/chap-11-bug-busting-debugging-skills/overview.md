@@ -49,3 +49,38 @@ In Go, you can escape characters using `\`. If you ever wanted to print the `\` 
 The Go language has several printing verbs. We will introduce some basic verbs that are frequently used.
 
 ![verbs-and-their-meanings](verbs-and-their-meanings.png)
+
+---
+
+### Basic debugging
+
+There is some basic debugging that we can perform to aid us in remediating or, at the very least, gathering information about these bugs:
+
+- <b>Printing out code markers in the code</b>:
+  Markers in our code are print statements that help us to identify where we are in the program when the bug occurred:
+
+  ```go
+  fmt.Println("We are in function calculateGPA")
+  ```
+
+- <b>Printing out the type of the variable</b>: While debugging, it might be useful to know the variable type that we are evaluating:
+
+  ```go
+  fmt.Printf("fname is of type %T\n", fname)
+  ```
+
+- <b>Printing out the value of the variable</b>: Along with knowing the type of the variable, it is sometimes valuable to know the value that is stored in the variable:
+
+  ```go
+  fmt.Printf("fname value %#v\n", fname)
+  ```
+
+- <b>Performing debug logging</b>: At times, it might be necessary to print debug statements to a file: maybe there is an error that only occurs in a production environment, or perhaps we would like to compare the results of data printed in a file for different inputs to our code. This log-formatted message adjusting the message from the standard logger can help in this case:
+
+  ```go
+  log.Printf("fname value %#v\n", fname)
+  ```
+
+![basic-debugging-methods](basic-debugging-methods.png)
+
+One of the first steps in debugging is to identify the general location of where the bug is in the code. Before you can start to analyze any data, we need to know where this bug is occurring. We do this by printing out markers in our code. Markers in our code are typically nothing more than print statements that help us to identify where we were in the program when the bug occurred. They are also used to narrow the scope of the location of the bug. Generally, this process involves placing a print statement with a message that shows us where we are in the code.
