@@ -252,3 +252,16 @@ log.Println("End of our app")
 
 The line did not execute because we logged the error as fatal, and that caused the program to exit.
 ![logging-a-fatal-err](logging-a-fatal-err.png)
+
+---
+
+### Debugging in live or restricted environments
+
+To best debug in those kinds of environments, you should consider the following points:
+
+- <b>Understand the environment</b>: Before diving into debugging, take a step back. Understand the deployment setup, network configurations, and any security constraints. This information helps to anticipate potential issues and streamline debugging.
+- <b>Remote debugging with proper tools</b>: `Delve` is a powerful debugger for Go that supports remote debugging. By using `Delve`, you can connect to a running Go process and inspect variables, set breakpoints, and step through code. This is an invaluable debugging tool.
+- <b>Observability of the code</b>: Go’s built-in profiling tools, such as `pprof`, allow you to gather runtime statistics and profile your application’s performance. By exposing a profiling endpoint in your code, you can collect data from live systems without modifying the code after it’s deployed. The same can be said if you add metrics and additional observability to your application. There are also tools available to capture application logs and aggregate them to be searchable in the future. This provides additional context that can assist the debugging process.
+- <b>Utilize log levels</b>: Utilizing the different log levels available in the language is useful in different environments. However, you should be cautious to not over-share information via logging – especially in the event of dealing with private data.
+- <b>Set up integrated development environment (IDE) debuggers</b>: Modern IDEs such as Visual Studio Code or JetBrains GoLand provide robust debugging capabilities. You can use breakpoints, watch expressions, and walk-through code using your debugger in the IDE. This is extremely efficient in pinpointing problems but is not something you can do in every deployment environment.
+- <b>Feature flags and canary releases</b>: Leveraging feature flags and/or canary releases enables you to selectively enable or disable specific functionalities in production. By gradually rolling out changes, you can observe the impact on a subset of users. This makes it easier to identify and address issues before a widespread release.
