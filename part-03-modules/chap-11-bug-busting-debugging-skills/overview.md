@@ -192,3 +192,63 @@ func main() {
 - `log.LlongFile` will give us the full filename and line number that the log comes from.
 
 ![log-output](log-output.png)
+
+---
+
+### Logging fatal errors
+
+Using the log package, we can also log fatal errors.
+
+The `Fatal()`, `Fatalf()`, and `Fatalln()` functions are similar to `Print()`, `Printf()`, and `Println()`. The difference is after logging, `Fatal()` functions are followed by an `os.Exit(1)` system call.
+
+The log package also has the following functions: `Panic`, `Panicf`, and `Panicln`. The difference between the Panic functions and the Fatal functions is that the Panic functions are recoverable. When using the Panic functions, you can use the `defer()` function, whereas when using the Fatal functions, you cannot. The Fatal functions call `os.Exit()`; a defer function will not be called when `os.Exit()` gets called.
+
+There may be some instances where you want to abort the program immediately with no possibility of recovery. For example, the application may have gotten to a state where it is best to exit it before data corruption or undesired behavior results. Or, you may have developed a command-line utility that is used by others and you need to provide an exit code to the callers of your executable to signal it has completed its tasks.
+
+In the following code example, we will look at how log.Fataln is used:
+
+```go
+package main
+
+import (
+    "log"
+    "errors"
+)
+
+func main() {
+    log.SetFlags(log.Ldate | log.Lmicroseconds | log.Llongfile)
+    log.Println("Start of our app")
+    err := errors.New("Application Aborted!")
+    if err != nil {
+        log.Fatalln(err)
+    }
+    log.Println("End of our app")
+}
+```
+
+Let’s break down the code to understand it better:
+
+```go
+log.Println("Start of our app")
+```
+
+The statement prints to stdout with the date, time, and line number of the log message:
+
+```go
+err := errors.New("We crashed!")”
+```
+
+We create an error to test the logging of Fatal() errors:
+
+```go
+log.Fatalln(err)
+```
+
+We log the error, and then it exits the program:
+
+```go
+log.Println("End of our app")
+```
+
+The line did not execute because we logged the error as fatal, and that caused the program to exit.
+![logging-a-fatal-err](logging-a-fatal-err.png)
