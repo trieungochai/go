@@ -129,3 +129,66 @@ The `%T` verb is used in each print statement to print the concrete type of the 
 
 We can also print out a Go syntax representation of the type using `%#v`. It is useful to be able to print out the Go representation of a variable.
 ![syntax-representation-of-the-type](syntax-representation-of-the-type.png)
+
+---
+
+### Logging
+
+Operating systems log various information such as access to resources, what an application is doing, the overall health of the system, and much more. It is not doing this because there is an error; rather, it is logging to make it easier for the system administrator to determine what is going on with the operating system at various times.
+
+It allows for easier debugging when the operating system acts in an unusual way or performs a certain task that was not expected. This is the same attitude we should take when logging our application.
+
+Logging is useful for understanding events that happen, the health of the application, any potential issues, and who is accessing our application or data. Logging is an infrastructure to your program that can be utilized when an abnormality occurs in the application. Logging helps us to track abnormalities that we would otherwise miss.
+
+The Go standard library provides a package called log. It includes basic logging that can be used by our programs.
+
+```go
+package main
+
+import (
+    "log"
+)
+
+func main() {
+    name := "Thanos"
+    log.Println("Demo app")
+    log.Printf("%s is here!", name)
+    log.Print("Run")
+}
+```
+
+The `Println()`, `Printf()`, and `Print()` log functions perform the same functionality as their fmt counterparts, with one exception. When the log functions execute, it gives additional details such as the date and time of the execution, as follows:
+
+```
+2019/11/10 23:00:00 Demo app
+2019/11/10 23:00:00 Thanos is here!
+2019/11/10 23:00:00 Run
+```
+
+This information can be useful when investigating and reviewing the logs later and for understanding the order of events. We can even get more details to be logged by our logger. The Go log package has a `SetFlags` function that allows us to be more specific.
+![flag-list-in-go](flag-list-in-go.png)
+
+Let’s set some of the flags in Figure 11.11 and observe the difference in behavior from what we had before.
+Consider the following example:
+
+```go
+package main
+
+import (
+    "log"
+)
+
+func main() {
+    log.SetFlags(log.Ldate | log.Lmicroseconds | log.Llongfile)
+    name := "Thanos"
+    log.Println("Demo app")
+    log.Printf("%s is here!", name)
+    log.Print("Run")
+}
+```
+
+- `log.Ldate` is the date of the local time zone. This is the same information that was logged before.
+- `log.Lmicroseconds` will give the microseconds of the formatted date.
+- `log.LlongFile` will give us the full filename and line number that the log comes from.
+
+![log-output](log-output.png)
