@@ -74,3 +74,13 @@ Abruptly terminating an application without proper cleanup can lead to various i
 The operating systems communicate with running processes through signals. A process is simply a program running on a computer. The `os/signal` package provides a convenient way to handle these signals within Go programs. There are common interrupt signals, such as `SIGINT (Ctrl + C)` and `SIGTERM`, that provide a comprehensive strategy for graceful terminations.
 
 The `signal.Notify` function allows you to register channels to receive specified signals. This sets the foundation for creating a mechanism to gracefully shut down your application upon receiving an interrupt signal. There are also effective shutdown patterns and best practices to keep in mind, such as ensuring closed network connections, saving state, and signaling goroutines, to finish up their tasks before exiting. Additionally, using timeouts and the context package enhances your application’s responsiveness during shutdown, preventing it from getting stuck indefinitely.
+
+---
+### Starting other commands from your application
+Launching external commands from your Go application opens opportunities for interaction with other programs, processes, and system utilities. The `os/exec` package in Go provides functionalities for starting and interacting with external processes. You can run basic commands, capture their output, and handle errors seamlessly with this package. It serves as a foundation for more advanced command execution scenarios.
+
+For example, the `os/exec` package allows you to customize the execution of commands by configuring attributes such as the working directory, environment variables, and more. You can also provide inputs to the subcommand through standard input streams from the originating command-line application.
+
+By running other commands from within your command-line application, you can run some processes in the background, allowing the application to continue its execution while monitoring or interacting with parallel processes. You can even establish bidirectional communication with commands, enabling real-time interaction and data exchange between the command-line application and the external processes.
+
+When starting other applications, cross-platform considerations must be kept in mind. There are differences in shell behavior and command paths across different operating systems. So, when executing subcommands from a command-line application, it is important to keep a consistent and reliable command execution in mind, regardless of the compute an end user may be using. Thankfully, the `os/exec` package provides a cross-platform solution for executing external commands in Go, making it easier to write code across different operating systems.
