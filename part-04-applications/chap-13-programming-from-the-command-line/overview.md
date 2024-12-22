@@ -96,3 +96,38 @@ There are a few fundamental concepts that are involved with building UIs for the
 - <b>User input handling</b>: Processing user input from keyboard events is fundamental to interactive interfaces
 
 Some TUI packages provide support for event handling, such as mouse events and key presses, dynamic updates based on input data, or customizing the appearance of UI components. There are several popular TUI packages available.
+
+---
+### go install
+You can install Go command-line applications using the go install command. This command is a powerful tool that’s provided (among the many) by the Go toolchain to compile and install Go applications in your workspace’s bin directory. This allows you to run your applications globally from any terminal window. To install a Go application, you can simply navigate to the project’s root directory and run go install.
+
+This command considers cross-platform compilation by providing the `GOOS` flag, where you can specify which operating system to target, as well as the `GOARCH` flag, where you can specify the underlying architecture to target.
+
+An example of a common Go package that you can use to generate command-line interfaces in Go is the cobra package. This is also a tool you can use to bootstrap application scaffolding to rapidly develop Cobra-based applications if you would like to dive further into developing your programming in terms of command-line skills. This package provides a simple example of using the go install command:
+```
+go install github.com/spf13/cobra-cli@latest
+```
+
+The preceding command installs all of the dependencies to use the Cobra CLI. As a result, my machine knows about the tool, and you can easily work with the command-line program that you just installed, as shown here:
+```
+cobra-cli –help
+```
+Cobra is a CLI library for Go that empowers applications.
+
+It can generate the necessary files to quickly create a Cobra application:
+```
+Usage:
+ cobra-cli [command]
+Available Commands:
+ add Add a command to a Cobra Application
+completion Generate the autocompletion script for the specified shell
+help Help about any command
+init Initialize a Cobra Application
+Flags:
+“-a, --author string author name for copyright attribution (default "YOUR NAME")
+--config string config file (default is $HOME/.cobra.yaml)
+-h, --help help for cobra-cli
+-l, --license string name of license for the project
+--viper use Viper for configuration
+Use "cobra-cli [command] --help" for more information about a command.
+```
