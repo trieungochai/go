@@ -39,3 +39,25 @@ There are a few main benefits of streaming data with Go:
 - <b>Memory efficiency</b>: The program can read and process data line by line, reducing memory consumption, as you then don’t have to read the entire data into memory.
 - <b>Real-time analysis</b>: Users can observe a real-time analysis of the results of processing their data.
 - <b>Interactive interface</b>: You can enhance the command-line interface so that it accepts dynamic information or displays additional details when processing large amounts of data.
+
+---
+### Exit codes and command line best practices
+Exit codes provide a way for command-line applications to communicate their status to the calling application. A well-defined exit code system allows users and the other scripts to understand whether the application executed successfully or encountered an issue when running.
+
+In Go, the os package provides a straightforward way to set exit codes using the `os.Exit` function. Conventionally, an exit code of 0 indicates success, while any non-zero code signals an error.
+
+For example, you can check the status code of the previous exercise and verify the successful status code. To do this, run echo `$?` in the terminal. `$?` is a special shell variable that holds the exit status of the last command that was executed, and the echo command prints it out. You’ll see the 0 exit code printout denoting a successful execution status, and no error. You can manually catch errors in the program and return non-zero code signals to denote errors. You can even create custom exit codes, such as the following:
+```go
+const (
+  ExitCodeSuccess = 0
+  ExitCodeInvalidInput = 1
+  ExitCodeFileNotFound = 2
+)
+```
+These can easily be used using `os.Exit`, by placing `os.Exit(ExitCodeSuccess)` in successful cases you want to exit, and by using one of the other error codes when you want to exit in certain circumstances.
+
+While using proper exit codes is an important command line best practice, there are a few others to keep in mind:
+- <b>Consistent logging</b>: Use meaningful messages to aid troubleshooting.
+- <b>Clear usage information</b>: Provide clear and concise usage information, including flags and arguments. Also, some packages allow you to provide example commands. Those should be used to let others see how to use the commands easily.
+- <b>Handle help and versioning</b>: Implement flags to display help and version information. This is good for making your application more user-friendly and providing a means to ensure they are on the latest version by checking the version information.
+- <b>Graceful termination</b>: Exit codes should be considered and terminated gracefully, ensuring proper cleanup tasks are performed as needed.
