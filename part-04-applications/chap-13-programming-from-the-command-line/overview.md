@@ -84,3 +84,15 @@ For example, the `os/exec` package allows you to customize the execution of comm
 By running other commands from within your command-line application, you can run some processes in the background, allowing the application to continue its execution while monitoring or interacting with parallel processes. You can even establish bidirectional communication with commands, enabling real-time interaction and data exchange between the command-line application and the external processes.
 
 When starting other applications, cross-platform considerations must be kept in mind. There are differences in shell behavior and command paths across different operating systems. So, when executing subcommands from a command-line application, it is important to keep a consistent and reliable command execution in mind, regardless of the compute an end user may be using. Thankfully, the `os/exec` package provides a cross-platform solution for executing external commands in Go, making it easier to write code across different operating systems.
+
+---
+### Terminal UIs
+Some of the latest updates to command-line programming with Go have included terminal UIs, or TUIs for short. Creating a TUI in Go opens a world of possibilities for building interactive command-line applications.
+
+There are a few fundamental concepts that are involved with building UIs for the terminal:
+
+- <b>Components</b>: TUIs are composed of various components, such as buttons, input fields, and/or lists
+- <b>Layouts</b>: Arranging components in a structured layout is crucial for a clean and intuitive design
+- <b>User input handling</b>: Processing user input from keyboard events is fundamental to interactive interfaces
+
+Some TUI packages provide support for event handling, such as mouse events and key presses, dynamic updates based on input data, or customizing the appearance of UI components. There are several popular TUI packages available.
