@@ -61,3 +61,16 @@ While using proper exit codes is an important command line best practice, there 
 - <b>Clear usage information</b>: Provide clear and concise usage information, including flags and arguments. Also, some packages allow you to provide example commands. Those should be used to let others see how to use the commands easily.
 - <b>Handle help and versioning</b>: Implement flags to display help and version information. This is good for making your application more user-friendly and providing a means to ensure they are on the latest version by checking the version information.
 - <b>Graceful termination</b>: Exit codes should be considered and terminated gracefully, ensuring proper cleanup tasks are performed as needed.
+
+---
+### Knowing when to stop by watching for interrupts
+
+When building robust applications, it’s crucial to handle interrupts gracefully, ensuring the software can respond appropriately to signals indicating it should stop or perform a specific action. In Go, the standard way to achieve this is by monitoring interrupt signals, allowing the application to shut down or clean up resources in an orderly manner.
+
+Graceful shutdown, or termination, is an important concept in computer science in general. Unforeseen events, server maintenance, or external factors might require your application to stop gracefully. This could involve releasing resources, saving state, or notifying connected clients. A graceful shutdown ensures your application remains reliable and predictable, minimizing the risk of data corruption or loss.
+
+Abruptly terminating an application without proper cleanup can lead to various issues, such as incomplete transactions, resource leaks, corrupted data, and more. Graceful shutdowns mitigate these risks by providing an opportunity to finish ongoing tasks and release acquired resources.
+
+The operating systems communicate with running processes through signals. A process is simply a program running on a computer. The `os/signal` package provides a convenient way to handle these signals within Go programs. There are common interrupt signals, such as `SIGINT (Ctrl + C)` and `SIGTERM`, that provide a comprehensive strategy for graceful terminations.
+
+The `signal.Notify` function allows you to register channels to receive specified signals. This sets the foundation for creating a mechanism to gracefully shut down your application upon receiving an interrupt signal. There are also effective shutdown patterns and best practices to keep in mind, such as ensuring closed network connections, saving state, and signaling goroutines, to finish up their tasks before exiting. Additionally, using timeouts and the context package enhances your application’s responsiveness during shutdown, preventing it from getting stuck indefinitely.
