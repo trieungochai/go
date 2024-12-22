@@ -23,3 +23,19 @@ Here’s a brief overview of how the flags package can help in reading and handl
 - <b>Access flag values</b>: Once you have parsed the flag values that have been passed in, you can access the defined flags through variables and continue to work with them throughout the application.
 
 Flags allow you to customize the behavior of your program without the need to modify the source code. For example, you can create flags that allow you to toggle behavior based on if a flag value is set. You can also use basic conditional logic pending the values set for certain flags.
+
+---
+### Streaming large amounts of data in and out of your application
+In command-line applications, it is crucial to handle large amounts of data efficiently for performance and responsiveness purposes. Often, command-line applications may be a small part of a larger pipeline processing data. Most people are not going to want to sit around typing out a large amount of data, such as a dataset, piece by piece.
+
+Go allows you to stream data to your applications so that you can process information in chunks, rather than all at once.
+
+This allows you to effectively process large amounts of data, reduce memory overhead, and provide better scalability in the future.
+
+When dealing with large amounts of data, it’s often stored in files. This can range from financial CSV files, analysis Excel files, or machine learning datasets.
+
+There are a few main benefits of streaming data with Go:
+
+- <b>Memory efficiency</b>: The program can read and process data line by line, reducing memory consumption, as you then don’t have to read the entire data into memory.
+- <b>Real-time analysis</b>: Users can observe a real-time analysis of the results of processing their data.
+- <b>Interactive interface</b>: You can enhance the command-line interface so that it accepts dynamic information or displays additional details when processing large amounts of data.
