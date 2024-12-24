@@ -348,3 +348,149 @@ func main() {
     file.IsDir(), file.ModTime(), file.Mode(), file.Size())
 }
 ```
+
+---
+
+### Reading the whole file at once
+
+These 2 functions are good to use when your file size is small. While these 2 methods are convenient and easy to use, they have one major drawback. That is, if the file size is too large, then it could exhaust the memory available on the system. It is important to keep this in mind and understand the limitations of the 2 methods we will be going over in this topic. Even though these methods are some of the quickest and easiest ways to load data, it is important to understand that they should be limited to small files and not large ones.
+
+The method’s signature is as follows:
+
+```go
+func ReadFile(filename string) ([]byte, error)
+```
+
+The `ReadFile` function reads the contents of the file and returns it as a slice of bytes along with any reported errors. We will look at the error return when the `ReadFile` method is used:
+
+- A successful call returns err == nil.
+- In some of the other read methods for files, end of file (`EOF`) is treated as an error. This is not the case for functions that read the entire file into memory.
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    content, err := os.ReadFile("test.txt")
+    if err != nil {
+        fmt.Println(err)
+    }
+    fmt.Println("File contents: ")
+    fmt.Println(string(content))
+}
+```
+
+As we can see, what we do in this code is as follows:
+
+- We do our imports
+- We read the contents of the whole `test.txt` file
+- We print an error if it occurs
+- Else, we print the content of the file:
+
+  ```go
+  fmt.Println("File contents: ")
+  fmt.Println(string(content))
+  ```
+
+As the content is retrieved as a slice of bytes, we need to convert it to a string to visualize it. Let’s see how to read, instead, the file character by character in the next snippet:
+
+package main
+
+import (
+    "fmt”
+“
+    }
+    fmt.Println("File contents: ")
+    fmt.Println(string(content))
+}
+As we can see, what we do in this code is as follows:
+We do our imports
+We read the contents of the whole test.txt file
+We print an error if it occurs
+Else, we print the content of the file:
+
+fmt.Println("File contents: ")
+  fmt.Println(string(content))
+As the content is retrieved as a slice of bytes, we need to convert it to a string to visualize it. Let’s see how to read, instead, the file character by character in the next snippet:
+
+```go
+package main
+
+import (
+    "fmt"
+    "io"
+    "log"
+    "os"
+)
+
+func main() {
+    f, err := os.Open("test.txt")
+    if err != nil {
+        log.Fatalf("unable to read file: %v", err)
+    }
+    buf := make([]byte, 1)
+    for {
+        n, err := f.Read(buf)
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            fmt.Println(err)
+            continue
+        }
+    if n > 0 {
+            fmt.Print(string(buf[:n]))
+    }
+    }
+}
+```
+
+1. Open the file using the `Open` function:
+
+```go
+f, err := os.Open("test.txt")
+```
+
+2. We check whether the error is `nil`, and if is not, we print the error and exit:
+
+```go
+if err != nil {
+    log.Fatalf("unable to read file: %v", err)
+}
+```
+
+3. We then create a slice of bytes of size 1:
+
+```go
+buf := make([]byte, 1)
+```
+
+4. We then make an infinite loop, and inside it, we read the file into the buffer:
+
+```go
+n, err := f.Read(buf)
+```
+
+5. We then check whether there is an error, which also means that we reached the end of the file, in which case we stop the loop:
+
+```go
+if err == io.EOF {
+    break
+}
+```
+
+6. If the error is not nil but is not end of file, we carry on with the loop, ignoring the error.
+
+7. If there is no error and the content has been read, then we display the content:
+
+```go
+if n > 0 {
+  fmt.Print(string(buf[:n]))
+}
+```
+
+Notice that we read one character at a time, as we made a buffer (slice of bytes) of size one. This might be resource intensive, so you might change this value to any other value for your particular case and needs.
