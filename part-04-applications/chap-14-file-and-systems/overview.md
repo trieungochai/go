@@ -494,3 +494,127 @@ if n > 0 {
 ```
 
 Notice that we read one character at a time, as we made a buffer (slice of bytes) of size one. This might be resource intensive, so you might change this value to any other value for your particular case and needs.
+
+---
+
+### CSV
+
+One of the most common ways a file is structured is as a comma-separated value. This is a clear-text file that contains data, which is basically represented as rows and columns. Frequently, these files are used to exchange data. A CSV file has a simple structure. Each piece of data is separated by a comma and then a new line for another record.
+
+An example of a CSV file is as follows:
+
+```
+firstName, lastName, age
+Celina, Jones, 18
+Cailyn, Henderson, 13
+Cayden, Smith, 42
+```
+
+The Go programming language has a standard library that is used for handling CSV files: encoding/csv:
+
+```go
+package main
+
+import (
+    "encoding/csv"
+    "fmt"
+    "io"
+    "log"
+    "strings"
+)
+
+func main() {
+    in := `firstName, lastName, age
+Celina, Jones, 18
+Cailyn, Henderson, 13
+Cayden, Smith, 42
+`
+    r := csv.NewReader(strings.NewReader(in))
+    for {
+        record, err := r.Read()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+        log.Fatal(err)
+        }
+        fmt.Println(record)
+    }
+}
+```
+
+---
+
+### Embedding
+
+Often, you will need to present to the user some complex text, maybe an HTML page, and it might be impractical to define the whole file as a string.
+
+You might want to display an image, again by opening and reading the file containing the image. One of the great features of Go is that even if you can build your application as a single binary, you will also have external dependencies that need to be distributed with your binary. Another issue is that reading from a file might be slow, so it would be great if we could embed files inside our Go application. This will allow us to just distribute one binary including all our assets. In the past, this required external libraries, but now Go includes a package called embed that allows you to easily embed any file into your binary so that you do not need to share other dependencies.
+
+In the next snippet, we will create a very simple template file and will read and parse it. Then we will use it to display some greetings. Let’s start with the template. We need a folder structure like this: `embedding_example/main.go and templates/template.txt`.
+
+The content of the template.txt file is Hello {{.Name}}, which is pretty simple. This simply means that when we use this template and pass a variable called Name, the engine will substitute the variable with anything we pass as a value.
+
+Let’s see now how we can make use of this template written in an external file, without having to read it every time we run the application:
+
+```go
+package main
+
+import (
+    "embed"
+    "os"
+    "text/template"
+)
+
+type Person struct {
+    Name string
+}
+var (
+    //go:embed templates
+    f embed.FS
+)
+func main() {
+    p := Person{"John"}
+    tmpl, err := template.ParseFS(f, "templates/template.txt")
+    if err != nil {
+        panic(err)
+    }
+    err = tmpl.Execute(os.Stdout, p)
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+1. We start importing all the necessary packages. After that, we define a struct called Person that will hold the name of the person to greet. The next part is the important bit:
+
+```go
+var (
+    //go:embed templates
+    f embed.FS
+)
+```
+
+This defines an `f` variable of type embed.FS, which stands for embedded file system and will work as a virtual filesystem for us. The directive on top of the declaration needs to be just above the variable we define, otherwise the compiler will prompt us with an error. This directive tells the Go compiler that it needs to read and embed whatever is inside the templates folder and make it available. Be careful if you add a folder with too many big files, as your final binary will increase in size.
+
+1. Inside the `main` function, we then instantiate a struct of type Person where the Name attribute has the value John.
+2. After that, we use the ParseFS function of the template package, and we use it to read from the embedded file system, represented by the variable `f`, the file called `template.txt` from inside the templates folder.
+3. Next, we just execute the templating engine, passing the previously created struct. If you run the application, you will see the message printed out as follows:
+
+```
+Hello John
+```
+
+4. Now, this does not seem much, but try running the following command:
+
+```go
+go build -o embtest main.go
+```
+
+5. Then, copy your executable to a different location where the template folder is not available. If you now run from that new folder, you will still see the exact same message:
+
+```
+./embtest
+```
+
+The key takeaway here is that the directive takes the whole filesystem from the point you specify, in this case, the templates folder, and creates a virtual filesystem. From this virtual filesystem, you can read all the files, but the content of the whole folder will actually be stored inside the final binary of your application. This feature is very powerful but should be used wisely, as the final binary could easily become very big.
