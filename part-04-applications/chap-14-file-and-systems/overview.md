@@ -131,3 +131,95 @@ flagapp
 ```
 
 This is because -1 is the default value.
+
+---
+
+### Signals
+
+A signal is an interrupt that is sent to our program or a process by the OS. When a signal is delivered to our program, the program will stop what it is doing; either it will handle the signal or, if possible, ignore it.
+
+The following is a list of the top 3 most often used interrupt signals for Go programs:
+
+- `SIGINT` (interrupt):
+
+  - `Situation`: This signal is commonly used when a user presses `Ctrl + C` in the terminal to interrupt the execution of a program.
+  - `Definition`: `SIGINT` is the interrupt signal. It is used to gracefully terminate a program and perform cleanup operations before exiting.
+
+- `SIGTERM` (termination):
+
+  - `Situation`: This signal is often used to request the termination of a program in a controlled manner. It is a generic signal to terminate a process.
+  - `Definition`: `SIGTERM` is the termination signal. It allows a program to perform cleanup operations before exiting, similar to `SIGINT`, but it can be caught and handled differently.
+
+- `SIGKILL` (kill):
+
+  - `Situation`: This signal is used to forcefully terminate a program. It doesn’t allow the program to perform any cleanup operations.
+  - `Definition`: `SIGKILL` is the kill signal. It immediately terminates a process without giving it a chance to clean up resources. It is a more forceful way of ending a program compared to `SIGTERM`.
+
+We use `defer` statements in our applications to perform various cleanup activities, such as the following:
+
+- The release of resources
+- The closing of files
+- The closing of database connections
+- Performing the removal of configuration or temporary files
+
+In some use cases, it is important that these activities are completed. Using a `defer` function will execute it just before returning to the caller. However, this does not guarantee that it will always run. There are certain scenarios in which the defer function won’t execute; for example, an OS interrupt to your program:
+
+- os.Exit(1)
+- Ctrl + C
+- Other instructions from the OS
+
+The preceding scenarios indicate where it may warrant using signals. Signals can help us control the exit of our program. Depending on the signal, it could terminate our program. For example, the application is running and encounters an OS interrupt signal after executing `employee.CalculateSalary()`. In this scenario, the defer function will not run, thus, `employee.DepositCheck()` does not execute and the employee does not get paid. A signal can change the flow of the program.
+
+![example-program-with-signals](example-program-with-signals.png)
+
+Support for handling signals is built into the Go standard library; it is in the `os/signal` package. This package will allow us to make our programs more resilient. We want to gracefully shut down when we receive certain signals. The first thing to do when handling signals in Go is to trap or catch the signal that you are interested in. This is done by using the following function:
+
+```go
+func Notify(c chan<- os.Signal, sig ...os.Signal)”
+```
+
+This function accepts an os.Signal data type on a channel, c. The sig argument is a variadic variable of os.Signal; we specify zero or more os.Signal data types that we are interested in. Let’s see a code snippet showing how we can use this function to stop the execution of an application:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "os/signal"
+    "syscall"
+)
+
+func main() {
+    sigs := make(chan os.Signal, 1)
+    done := make(chan struct{})
+    signal.Notify(sigs,syscall.SIGINT)
+    go func() {
+    for {
+        s := <-sigs
+        switch s {
+            case syscall.SIGINT:
+                fmt.Println()
+                fmt.Println("My process has been interrupted. Someone might of pressed CTRL-C")
+                fmt.Println("Some clean up is occuring")
+                done <-struct{}{}
+            }
+        }
+    }()
+    fmt.Println("Program is blocked until a signal is caught")
+    done <- struct{}{}
+    fmt.Println("Out of here")
+}
+```
+
+After the definition of the package and importing the packages, we do the following:
+
+- Define a channel to send signals
+- Define a channel that we can use as a flag to stop the execution
+- Use `Notify` to send a `SIGINT` signal
+- Create a goroutine that listens indefinitely to signals and if the signal is `SIGINT`, it does some printouts and sends a message to the done channel with the true value
+- Print a message stating we are waiting for the done message to be received
+- Wait for the done message
+- Print the final message
+
+When we run the application, we will actually see the application terminate quite quickly, because we manually send the SIGINT signal. In a real-world scenario, the application would just wait for the `SIGKILL` signal, which we can manually send with `Ctrl + X`.
