@@ -223,3 +223,128 @@ After the definition of the package and importing the packages, we do the follow
 - Print the final message
 
 When we run the application, we will actually see the application terminate quite quickly, because we manually send the SIGINT signal. In a real-world scenario, the application would just wait for the `SIGKILL` signal, which we can manually send with `Ctrl + X`.
+
+---
+
+### Create and write to files
+
+The `os` package provides a simple way in which to create a file. For those who are familiar with the touch command from the Unix world, it is similar to this. Here is the signature of the function:
+
+```go
+func Create(name string(*File, error)
+```
+
+The function will create an empty file much as the `touch` command does. It is important to note that if the file already exists, then it will truncate the file.
+
+The `os` package’s `Create` function has an input parameter, which is the name of the file to create and its location. If successful, it will return a `File` type. It is worth noting that the File type satisfies the `io.Write` and `io.Read` interfaces.
+
+```go
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    f, err := os.Create("test.txt")
+    if err != nil {
+        panic(err)
+    }
+    defer f.Close()
+}
+```
+
+The preceding code simply defines the imports and then, in the main function, tries to create a file called `test.txt`. If there is an error as a result, it panics. The last line before the closing brackets makes sure that whenever the application is interrupted, either because it terminates successfully or it panics, the file will be closed. We want to make sure we never keep files in an open state.
+
+Creating an empty file is straightforward, but let’s continue with `os.Create` and write to the file we just created. Recall that `os.Create` returns an `\*os`.File type. There are 2 methods of interest that can be used to write to the file:
+
+package main
+import (
+    "os"
+)
+func main() {
+    f, err := os.Create("test.txt")
+    if err != nil {
+        panic(err)
+“
+    defer f.Close()
+}
+The preceding code simply defines the imports and then, in the main function, tries to create a file called test.txt. If there is an error as a result, it panics. The last line before the closing brackets makes sure that whenever the application is interrupted, either because it terminates successfully or it panics, the file will be closed. We want to make sure we never keep files in an open state.
+Creating an empty file is straightforward, but let’s continue with os.Create and write to the file we just created. Recall that os.Create returns an \*os.File type. There are 2 methods of interest that can be used to write to the file:
+
+- Write
+- WriteString
+
+```go
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    f, err := os.Create("test.txt")
+    if err != nil {
+        panic(err)
+    }
+    defer f.Close()
+    f.Write([]byte("Using Write function.\n"))
+    f.WriteString("Using Writestring function.\n")
+}
+```
+
+We can, however, use the package to write to the file directly without having to open it first. We can do this using the `os.WriteFile` function:
+
+```go
+func WriteFile(filename string, data []byte, perm os.FileMode) error
+```
+
+The method writes the data to the file specified in the filename parameter, with the given permissions. It will return an error if one exists. Let’s take a look at this in action:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os
+)
+
+func main() {
+    message := []byte("Look!")
+    err := os.WriteFile("test.txt", message, 0644)
+    if err != nil {
+        fmt.Println(err)
+    }
+}
+```
+
+As we can see, we can create a file, send a string transformed into a slice of bytes, and assign the permission to it, all in one line. It is important to also send the permission level and note that we need to use the octal notation with the leading zero (this is because without the leading zero, the permission will not work as expected).
+One important thing that we haven’t seen till now is how to check whether a file exists or not. This is important because if a file does exist, we might not want to truncate it and override it with new content. Let’s see how we can do that:
+
+```go
+package main
+
+import (
+    "fmt"
+    "s"
+    "flag"
+)
+
+func main() {
+    var name tring
+    flag.StringVar(&name, "name", "", "File name")
+    flag.Parse()
+    file, err := os.Stat(name)
+    if err != nil {
+        if os.IsNotExist(err) {
+            fmt.Printf("%s: File does not exist!\n", name)
+            fmt.Println(file)
+            return
+        }
+        fmt.Println(err)
+        return
+      }
+    fmt.Printf("file name: %s\nIsDir: %t\nModTime: %v\nMode: %v\nSize: %d\n", file.Name(),
+    file.IsDir(), file.ModTime(), file.Mode(), file.Size())
+}
+```
