@@ -134,3 +134,18 @@ Go has 2 types of substitutions:
 - We use `VALUES($1,$2)` in the case of inserts or updates
 
 `db.Prepare()` takes a SQL statement and imbues it with protection against SQL injection attacks. It works by restricting the values of the variable substitutions.
+
+---
+
+### Retrieving data
+
+SQL injection does not only concern the data being inserted. It also concerns any data that is manipulated in the database. Retrieving data and, most importantly, retrieving it safely is also something we must prioritize and handle with proper caution.
+
+When we query data, our results depend on the database we connect to and the table we would like to query. However, we must also mention that the security mechanisms that are implemented by the database engine may also prevent a successful query unless the user has appropriate privileges.
+
+We can differentiate between 2 types of queries:
+
+- Some queries do not take an argument, such as `SELECT \* FROM table`
+- Some queries require you to specify filter criteria
+
+Go provides 2 functions that allow you to query data. One is called `Query()` and the other is called `QueryRow()`. As a rule of thumb, you should remember that `Query()` is used to return any number of results, while `QueryRow()` is used when you expect to retrieve at most one row. You can also wrap them with the `Prepare()` statement.
