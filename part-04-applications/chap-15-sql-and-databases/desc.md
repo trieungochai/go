@@ -155,3 +155,9 @@ Go provides 2 functions that allow you to query data. One is called `Query()` an
 ### Updating existing data
 
 When you are updating a row or multiple rows with Go, you are in trouble. The sql package does not provide any function called `Update()`; however, there is the `Exec()` function, which serves as a universal executor for your queries. You can execute `SELECT`, `UPDATE`, `DELETE`, or whatever you need to execute with this function.
+
+---
+
+### Deleting data
+
+The analogy is the same as for the `UPDATE` statement of our records. We formulate a `DELETE` statement and execute it; we can technically modify the action of our `UPDATE` script to delete it from the database.
