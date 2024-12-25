@@ -149,3 +149,9 @@ We can differentiate between 2 types of queries:
 - Some queries require you to specify filter criteria
 
 Go provides 2 functions that allow you to query data. One is called `Query()` and the other is called `QueryRow()`. As a rule of thumb, you should remember that `Query()` is used to return any number of results, while `QueryRow()` is used when you expect to retrieve at most one row. You can also wrap them with the `Prepare()` statement.
+
+---
+
+### Updating existing data
+
+When you are updating a row or multiple rows with Go, you are in trouble. The sql package does not provide any function called `Update()`; however, there is the `Exec()` function, which serves as a universal executor for your queries. You can execute `SELECT`, `UPDATE`, `DELETE`, or whatever you need to execute with this function.
