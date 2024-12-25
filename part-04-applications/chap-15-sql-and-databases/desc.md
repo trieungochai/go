@@ -161,3 +161,33 @@ When you are updating a row or multiple rows with Go, you are in trouble. The sq
 ### Deleting data
 
 The analogy is the same as for the `UPDATE` statement of our records. We formulate a `DELETE` statement and execute it; we can technically modify the action of our `UPDATE` script to delete it from the database.
+
+---
+
+### Truncating and deleting table
+
+To empty the table, we can simply formulate `DELETE` statements that match every record in our table and thus remove every single record from our table.
+
+However, there is a more elegant way to do this: we can use the `TRUNCATE TABLE` SQL statement. The result of this statement is an empty table. We can use the `Exec()` function from our sql package for this.
+
+The following statement will achieve a full TRUNCATE:
+
+```go
+emptyTable, emptyTableErr := db.Exec("TRUNCATE TABLE test")
+if emptyTableErr != nil {
+  panic(emptyTableErr)
+}
+```
+
+The result of this is an empty table called test. To get rid of the table completely, we can modify our statement as follows:
+
+```go
+dropTable, dropTableErr := db.Exec("DROP TABLE test")
+if dropTableErr != nil {
+  panic(dropTableErr)
+}
+```
+
+If you need a table but do not need any more old data, you might want to truncate it and carry on adding new data to the existing table. If you do not need the table anymore because you changed your schema, you might want to just delete it using the DROP command.
+
+If we inspect our database engine, we won’t find any trace of the test table. This eradicated the whole table from the very face of the database.
