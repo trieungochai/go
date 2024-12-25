@@ -105,3 +105,32 @@ How do these database engines control who can access what data? There are 2 appr
 
 - The 1st one is access control lists (`ACLs`), which is a simple yet powerful approach. ACL security logic tells us which user has which permissions, such as CREATE, UPDATE, and DELETE.
 - The 2nd approach involves inheritance and roles. This is more robust and is better suited for big enterprises.
+
+---
+
+### Inserting data
+
+Long ago, when the era of web applications backed by SQL databases started to bloom, some gutsy people invented the SQL injection attack. Here, a type of authentication is done against a database via SQL queries and, for example, after converting the password with mathematical magic into hash functions, the web app executes the query with the username and password coming from the input of the form.
+
+Many servers executed something like this:
+
+```sql
+SELECT password FROM Auth WHERE username=<input from user>
+```
+
+Then, the password gets rehashed; if the 2 hashes match, the password is good for the user.
+
+The problem with this came from the `<input from user>` part because if the attacker was smart enough, they could reformulate the query and run additional commands. Here’s an example:
+
+```sql
+SELECT password FROM Auth WHERE username=<input from user> OR '1'='1'
+```
+
+The problem with this query is that `OR '1' = '1'` always evaluates to `true`, and it does not matter what the username is; the user’s password hash would be returned. This can be further reused to formulate an additional attack. To prevent this, Go uses something called the `Prepare()` statement, which protects against these attacks.
+
+Go has 2 types of substitutions:
+
+- We use `WHERE col = $1` in the case of queries
+- We use `VALUES($1,$2)` in the case of inserts or updates
+
+`db.Prepare()` takes a SQL statement and imbues it with protection against SQL injection attacks. It works by restricting the values of the variable substitutions.
