@@ -52,3 +52,15 @@ log.Fatal(http.ListenAndServe(":8080", MyHandler{}))
 This will halt the execution and print the error message that’s returned by the `ListenAndServe` function.
 
 ---
+
+### Simple routing
+
+Now, we want to associate different messages with these different paths on our server. We will do this by introducing some simple routing to our server.
+
+A path is what you see after 8080 in the URL, where 8080 is the port number we chose to run the server on. This path can be one number, a word, a set of numbers, or character groups separated by a `/`. To do this, we will use another function of the net/http package:
+
+```go
+HandleFunc(pattern string, handler func(ResponseWriter, \*Request))
+```
+
+---
