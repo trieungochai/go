@@ -191,3 +191,124 @@ if dropTableErr != nil {
 If you need a table but do not need any more old data, you might want to truncate it and carry on adding new data to the existing table. If you do not need the table anymore because you changed your schema, you might want to just delete it using the DROP command.
 
 If we inspect our database engine, we won’t find any trace of the test table. This eradicated the whole table from the very face of the database.
+
+---
+
+### Adding users with GORM
+
+So far, we’ve interacted with the database by writing some SQL queries directly. What we’ve done is create and run Go code, which was used to then run SQL code. This is perfectly fine, but there is also a way to run just Go code to interact with a SQL database. On top of this, the data that we are storing in the database will then be unwrapped into Go variables, and the content of a row might define the values of an instance of a Go struct. What we can do to improve and simplify the whole process is abstract the database even more and use an object-relational mapper (ORM).
+
+This is a library that matches the tables and their relations as Go structs so that you can insert and retrieve data the same way you would instantiate and delete any instance of a Go struct. An ORM is not generally part of a language, and Go does not provide one by itself. There is, however, a set of third-party libraries, one of which is the de facto ORM for Go, and this is GORM.
+
+To use GORM, we must import it. Here’s how:
+
+```go
+import (
+  "gorm.io/gorm"
+  "gorm.io/driver/postgres"
+)
+```
+
+- The first loads the GORM library
+- The second specifies the driver to use.
+
+GORM can be used to interact with a lot of different database engines, including MySQL, Postgres, and SQLite. While the library itself is available from `gorm.io/gorm`, the specific way to interact with the engine is handled by the driver – in this case, the Postgres driver.
+
+The next step will be to define a schema – that is, a Go struct representing what’s inside a table. Let’s define a struct representing a user:
+
+```go
+type User struct {
+  gorm.Model
+  FirstName  string
+  LastName   string
+  Email      string
+}
+```
+
+We define a struct called `User` and we add some fields that will hold the first and last name of a user, together with their email address. The first important thing, however, is that we embed the `gorm.Model` struct into our struct, making it effectively a GORM model. This struct will add some fields, such as an ID, and set it as a primary key, as well as some other fields, such as creation and update date, and will also add some methods that will be used by the library to make it interact with a database.
+
+To interact with the database, we must connect to it. Earlier, we saw how to connect to PostgreSQL; we will do something similar here:
+
+```go
+connection_string = "user=postgres password=Start!123 host=127.0.0.1 port=5432 dbname=postgres sslmode=disable"
+db, err := gorm.Open(postgres.Open(connection_string), &gorm.Config{})
+if err != nil {
+   panic("failed to connect database")
+}
+```
+
+We can use the same connection string as earlier, but we will do so inside the gorm.Open call, which allows GORM to interact with the underlying database engine.
+
+So far, we haven’t created a table for the users, and we’ve seen how to create one using SQL and call it via Go. With GORM, we do not need to do that. After defining the type that will go inside the table that will hold users, we can have GORM create that table for us, if it does not exist already. We can do this with the following code:
+
+```go
+db.AutoMigrate(&User{})
+```
+
+This call ensures that there is a table holding users that contains all the required columns, and by default will call it users. There are ways to change the name of the table, but in general, it is better to follow the conventions. So, a table holding users’ data will be called users, while a struct holding the details of a user will be called User.
+
+---
+
+### Finding Users with GORM
+
+Once we’ve added users, we would like to retrieve them. Let’s add a few other users using what we learned in the previous section:
+
+```go
+db.Create(&User{FirstName: "John", LastName: "Doe", Email: "john.doe@gmail.com"
+db.Create(&User{FirstName: "James", LastName: "Smith", Email: "james.smith@gmail.com"})
+```
+
+Let’s assume that we had already inserted the record for John Smith. So, starting from a clean database and clean table, we should have users with IDs of 1, 2, and 3, respectively.
+Now, we want to retrieve details about the first user we inserted. We can do that with the following command:
+
+```go
+var user User
+db.First(&user, 1)
+```
+
+This will return the first user matching the condition where the user’s ID is equal to 1. The returned record is un-marshaled into the user variable, which is an instance of the User struct. We can search for every other user via their ID and substitute the number 1 with 2 or 3. This, however, is not very interesting, as we might not know the user’s ID but only their name or surname. Let’s see how to retrieve John Doe from his surname:
+
+```go
+db.First(&user, "last_name = ?", "Doe")
+```
+
+Note that we did not use `LastName` but last_name as GORM automatically transforms every attribute of the struct that’s camel case into snake case; this is the usual convention for database column names. The other important thing to notice is that we use two parameters:
+
+```go
+"last_name = ?" and "Doe”
+```
+
+The first one represents the column we want to search in, and we have a question mark after the equals sign. The question mark is a placeholder and will be replaced by the next parameter, which is Doe. As we have two people with the surname Smith, the function we just used will retrieve the first person with that surname, but this is not necessarily the one we are looking for. We could use the Last function, which returns the last result that matches the query, but we could have more users with the same surname. The solution for this is as follows:
+
+```go
+db.First(&user, "last_name = ? AND first_name= ?", "Smith", "James")
+```
+
+Here, we created a query that includes more conditions – the first few parameters express the condition, while the following parameters fill the values with placeholders.
+
+The issue we could face here is that we might get confused with the names of the struct’s attributes and the actual column names. If we need to do a simple matching query, we can substitute the previous code with the following:
+
+```go
+db.First(&user, &User{FirstName: "James", LastName: "Smith"})”
+```
+
+Here, we just pass an instance of the User struct with a few attributes set, leaving the other ones to the default values.
+
+These examples allow us to search for a specific record, but often, we need a list of objects. Of course, the First and Last functions return only one item, but GORM also gives us a function to return all the records that match our criteria. If the criteria is simply an ID, or if the field we search for is unique, we are better off sticking with First, but if our criteria are not unique, we should use the following function:
+
+```go
+var users []User
+db.Find(&users, &User{LastName: "Smith"})”
+```
+
+The Find function returns all the matching records, but we cannot just un-marshal it into a single user instance. So, we must define a users variable, which is a slice of User instances, rather than using the previously seen user, which was an instance of a User struct.
+
+This gives us an idea of how to use GORM to insert and retrieve data, but we’ve forgotten one important thing: errors. These functions are contacting the database, but the queries might somehow error for several reasons, and we need to control that. The previously seen function does not return an error but a pointer to the database struct, which we can use to get the errors:
+
+```go
+tx := db.Find(&users, &User{LastName: "Smith"})
+if tx.Error != nil {
+  fmt.Println(tx.Err”
+```
+
+Here, the tx variable stands for transaction and returns a set of values with a potential error among them. We can check if there is an error by comparing the tx.Error value with nil. When we use a transaction, whatever we do to the database is not definitive; it does not affect the state of the database that’s accessed by any other client, so any change is temporary. To make any change effective, we need to commit the transaction. In this case, we are just returning results, and not modifying the database, so we do not need to commit. “We are using the transactions because GORM returns a transaction from the Find call.
