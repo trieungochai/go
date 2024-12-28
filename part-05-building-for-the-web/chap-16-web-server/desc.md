@@ -78,3 +78,133 @@ ServeHTTP(w http.ResponseWriter, r *http.Request)
 In both cases, there will always be a function with `http.ResponseWriter` and `*http.Request` as parameters that will handle the path. When one or the other might be chosen may just be a matter of personal preference in many cases, but i might be important – when creating a complex project, for example – to choose the right method. Doing so will ensure that the structure of the project is optimal. Different routes may appear better organized if they’re handled by handlers that belong to different packages, or might have to perform very few actions, as in our previous case; and a simple function might prove to be the ideal choice.
 
 In general, for simple projects where you have a handful of simple pages, you may opt for `HandleFunc`. For example, let’s say you want to have static pages and there is no complex behavior on each page. In this case, it would be overkill to use an empty struct just for returning static text. The handler is more appropriate whenever you need to set some parameters, or if you want to keep track of something. As a general rule, let’s say that if you have a counter, `Handler` is the best choice because you can initialize a struct with a count of 0 and then increment it.
+
+---
+### Adding middleware
+
+Sometimes, you will need to create a lot of functions to handle HTTP requests, maybe serving different paths in a URL, all performing different actions. You might need to create a function to handle a server returning a list of users, one with a list of projects, a route for updating some details, and all the functions doing different things.
+
+That although these functions perform different actions, they will also have something in common. A common example is when these functions have to be performed on a secured environment, which means only for users that have been logged in.
+
+```go
+http.HandleFunc(
+  "/hello1",
+  func(w http.ResponseWriter,
+  r *http.Request,
+){
+  msg := "Hello there, this is function 1"
+  w.Write([]byte(msg))
+})
+
+http.HandleFunc(
+  "/hello2",
+  func(w http.ResponseWriter,
+  r *http.Request,
+){
+  msg := "Hello there, and now we are in function 2"
+  w.Write([]byte(msg))
+})
+```
+
+Both functions will display a sentence that starts with `Hello there,`. Let’s find a way to extract this part of the behavior of these functions and create a 3rd function that will be used to perform the act of writing the initial cheering message:
+```go
+func Hello(next http.HandlerFunc) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    msg := "Hello there,"
+    w.Write([]byte(msg))
+    next.ServeHTTP(w, r)
+  }
+}
+```
+
+This function has the following signature:
+
+```go
+func Hello(next http.HandlerFunc) http.HandlerFunc
+```
+This means it is called `Hello,` accepts `http.HandlerFunc` as a parameter, and returns a result against `http.HandlerFunc`. This parameter is called `next` because it is the function that we will want to run next. Let’s look at the body of the function:
+```go
+  return func(w http.ResponseWriter, r *http.Request) {
+    msg := "Hello there,"
+    w.Write([]byte(msg))
+    next.ServeHTTP(w, r)
+  }
+```
+
+It returns a function that implements the `http.HandlerFunc` type and has the correct arguments and return type. This function will write a message stating `Hello there`, to the response writer, `w`, and then call the next function with the same response writer and request that the function without a name receives.
+
+Now, let’s refactor our code to make it a bit easier to read. We’ll create 2 functions for the actions we want to perform:
+
+```go
+func Function1(w http.ResponseWriter, r *http.Request) {
+  msg := " this is function 1"
+  w.Write([]byte(msg))
+}
+
+func Function2(w http.ResponseWriter, r *http.Request) {
+  msg := " and now we are in function 2"
+  w.Write([]byte(msg))
+}
+```
+
+Let’s see what our file looks like so far:
+
+```go
+package main
+
+import (
+  "log"
+  "net/http"
+)
+
+func Hello(next http.HandlerFunc) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    msg := "Hello there,"
+    w.Write([]byte(msg))
+    next.ServeHTTP(w, r)
+  }
+}
+
+func Function1(w http.ResponseWriter, r *http.Request) {
+  msg := " this is function 1"
+  w.Write([]byte(msg))
+}
+
+func Function2(w http.ResponseWriter, r *http.Request) {
+  msg := " and now we are in function 2"
+  w.Write([]byte(msg))
+}
+```
+
+As you can see, we have our Hello function and 2 functions returning 2 different sentences to the response writer. The last step is to associate these functions with a path, like so:
+
+```go
+func main() {
+  http.HandleFunc(
+    "/hello1", Function1)
+  http.HandleFunc(
+    "/hello2", Function2)
+  log.Fatal(http.ListenAndServe(":8085", nil))
+}
+```
+
+As you can see, we pass functions 1 and 2 to each route. If you run the code on your machine and go to `http://localhost:8085/hello1`, you will see a message stating this is function 1. What we have not used yet, though, is the Hello function.
+Let’s rewrite the last block of code and make use of it:
+
+```go
+func main() {
+  http.HandleFunc(
+    "/hello1", Hello(Function1))
+  http.HandleFunc(
+    "/hello2", Hello(Function2))
+  log.Fatal(http.ListenAndServe(":8085", nil))
+}
+```
+
+If you run this program again, you will see that the message has now changed to `Hello there, this is function 1`. The `Hello` function is essentially running before the `Function1` function and after doing its own work, it calls `Function` so that that function can also do its job. We call the Hello function `Middleware` as it acts as the man in the middle – it captures the request, does some work, and then calls the next function in line. By doing this, it is possible to chain many middleware by doing something like this:
+
+```go
+Hello(Middleware2(Middleware3((Function2)))
+```
+
+You can use this pattern to perform many common actions before or after the actual function that needs to be associated with a path on the URL.
