@@ -208,3 +208,18 @@ Hello(Middleware2(Middleware3((Function2)))
 ```
 
 You can use this pattern to perform many common actions before or after the actual function that needs to be associated with a path on the URL.
+
+---
+### Dynamic content
+
+A server that serves only static content is useful, but there is much more that can be done. An HTTP server can deliver content based on a more granular request, which is done by passing some parameters to the server. There are many ways to do so, but one simple way is to pass parameters to `querystring`. If the URL of the server is as follows:
+```
+http://localhost:8080
+```
+Then, we can add something like this:
+```
+http://localhost:8080?name=john
+```
+Here, `?name=john` is called a querystring string as it is a string representing a query. In this case, querystring sets a variable called `name` with a value of `john`. This way of passing parameters is generally used with `GET` requests, while a `POST` request will generally make use of the body of the request to send parameters.
+
+We will begin by looking at how to accept parameters for a `GET` request since this request is made by simply opening our browser on a specific address.
