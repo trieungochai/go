@@ -234,3 +234,9 @@ A template is a skeleton from which complex entities can be developed. Essential
 Go provides 2 different templating packages – one for text and one for HTML. As we are working with HTTP servers and we want to produce a web page, we will use the HTML templating package, but the interface is the same for the text template library. Although the templating packages are good enough for any real-world application, several other external packages can be used to improve performance. One of these is the hero template engine, which is much faster than the standard Go templating package.
 
 ---
+## Static resources
+In the case of the first hello world server, the message never changed. If we wanted to modify the message and return a Hello galaxy message, we would have to change the text in the code and then recompile and/or run the server again. What if you wanted to sell your simple “hello” server and give the option to everybody to specify a custom message? Of course, you should give the source code to everybody so that they can recompile and run the server.
+
+Although you might want to embrace open source code, this might not be the ideal way to distribute an application, and we need to find a better way to separate the message from the server. A solution to that is to serve static files, which are files that are loaded by your program as external resources. These files do not change, do not get compiled, and are loaded and manipulated by your program. One such example may be templates, as seen previously, because they are just text and you can use template files instead of adding the templates as text to your code. Another simple example of static resources is if you want to include styling files such as CSS in your web page.
+
+---
