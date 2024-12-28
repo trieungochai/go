@@ -240,3 +240,39 @@ In the case of the first hello world server, the message never changed. If we wa
 Although you might want to embrace open source code, this might not be the ideal way to distribute an application, and we need to find a better way to separate the message from the server. A solution to that is to serve static files, which are files that are loaded by your program as external resources. These files do not change, do not get compiled, and are loaded and manipulated by your program. One such example may be templates, as seen previously, because they are just text and you can use template files instead of adding the templates as text to your code. Another simple example of static resources is if you want to include styling files such as CSS in your web page.
 
 ---
+### Getting some style
+A web page, however, does not include just HTML code – it may also include images and styles, as well as some frontend code. You need to know how to serve these documents as we use a small CSS file to build our example.
+
+Serving static files and putting templates in different files, or generally using external resources, is a good way to separate concerns on our projects and make our projects more manageable and maintainable, so you should try to follow this approach in all your projects.
+
+To add a style sheet to your HTML pages, you need to add a tag like this:
+```js
+<link rel="stylesheet" href="file.css">
+```
+
+This injects the CSS file into the page as a `stylesheet`, but this is reported here just by way of an example, in case you are interested in learning how to write HTML.
+
+You have also seen that we have served files, reading them from the filesystem one by one, but Go provides us with an easy function to do the job for us:
+```js
+http.FileServer(http.Dir("./public"))
+```
+
+Essentially, `http.FileServer` creates what its name says: a server serving external files. It takes it from the directory defined in `http.Dir`. Whatever file we put inside the `./public` directory will be automatically accessible in the address bar:
+```
+http://localhost:8080/public/myfile.css
+```
+
+This seems good enough. However, in a real-world scenario, you do not want to expose your folder names and instead specify a different name for your static resources. This can be achieved as follows:
+
+```go
+http.StripPrefix(
+  "/statics/",
+  http.FileServer(http.Dir("./public")),
+)
+```
+
+You may have noticed that the `http.FileServer` function is wrapped by an `http.StripPrefix` function, which we use to associate the requested path with the correct files on the filesystem. Essentially, we want the path of the `/statics` form to be available and to bind it to the content of the public folder. The `StripePrefix` function will remove the `/statics/` prefix from the request and pass it to the file server, which will just get the name of the file to serve and search for it in the public folder.
+
+It is not necessary to use these wrappers if you do not want to change the name of the path and folder, but this solution is general and works everywhere, so you can utilize it in other projects without having to worry.
+
+---
