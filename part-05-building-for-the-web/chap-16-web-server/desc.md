@@ -223,3 +223,14 @@ http://localhost:8080?name=john
 Here, `?name=john` is called a querystring string as it is a string representing a query. In this case, querystring sets a variable called `name` with a value of `john`. This way of passing parameters is generally used with `GET` requests, while a `POST` request will generally make use of the body of the request to send parameters.
 
 We will begin by looking at how to accept parameters for a `GET` request since this request is made by simply opening our browser on a specific address.
+
+---
+### Templating
+Although JSON can be the best choice when complex data structures have to be shared across software programs, in general, this is not the case when the HTTP server is supposed to be consumed by humans.
+
+A template is a skeleton from which complex entities can be developed. Essentially, a template is like text with some blanks. A template engine will take some values and fill in the blanks, as shown in the following diagram:
+![templating-example](templating-example.png)
+
+Go provides 2 different templating packages – one for text and one for HTML. As we are working with HTTP servers and we want to produce a web page, we will use the HTML templating package, but the interface is the same for the text template library. Although the templating packages are good enough for any real-world application, several other external packages can be used to improve performance. One of these is the hero template engine, which is much faster than the standard Go templating package.
+
+---
