@@ -276,3 +276,99 @@ You may have noticed that the `http.FileServer` function is wrapped by an `http.
 It is not necessary to use these wrappers if you do not want to change the name of the path and folder, but this solution is general and works everywhere, so you can utilize it in other projects without having to worry.
 
 ---
+### Getting dynamic
+Static assets are generally served as they are, but when you want to create a dynamic page, you might want to make use of an external template, which you can use on the fly, so that you can change the template without having to restart your server, or that you can load on startup, which means you will have to restart your server following any change. Loading a file at startup is done simply for performance reasons. Filesystem operations are always the slowest, and even if Go is a fairly fast language, you might want to take performance into account when you want to serve your pages, especially if you have many requests from multiple clients.
+
+Now, we can use the template as an external resource, put our template code in an HTML file, and load it. The template engine can parse it and then fill in the blanks with the passed parameters. To do this, we can use the `html/template` function:
+```go
+func ParseFiles(filenames ...string) (*Template, error)
+```
+
+As an example, this can be called with the following code:
+```go
+template.ParseFiles("mytemplate.html")
+```
+
+In addition, the template is loaded in memory and is ready to be used.
+So far, you have been the sole user of your HTTP servers, but in an actual scenario, that won’t be the case.
+
+---
+### Embedding external files
+Having external files to read can be problematic when deploying something to production, especially with Go, where one of its strong features is building a single executable.
+
+Fortunately, there is a package in Go called embed that allows us to add external files to our final binary so that we need the original file when we develop, but we do not need to share this file with anybody else as it will be compiled and added to our final binary. Let’s see how this works.
+
+Let’s imagine that you have a simple template file and want to use it on your web server:
+```js
+mytemplate.html
+<h1>{{.Text}}</h1>
+```
+
+Let’s look at a small program that does exactly that, using what you’ve learned in the previous chapter:
+```go
+package main
+
+import (
+  "html/template"
+  "log"
+  "net/http"
+)
+
+func main() {
+  t, _ := template.ParseFiles("mytemplate.html")
+  http.HandleFunc(
+    "/hello1", func(w http.ResponseWriter,
+      r *http.Request,
+    ) {
+      data := struct {
+        text string
+      }{
+        text: "Hello there",
+      }
+      t.Execute(w, data)
+    })
+  log.Fatal(http.ListenAndServe(":8085", nil))
+}
+```
+
+If you run this code, the program will parse the file from your folder and use it as a template to display Hello there on the `/hello1` path. If you build your application and you move your executable to a different folder, however, you will receive an error. Let’s modify this software so that it uses the `embed` package:
+
+```go
+package main
+
+import (
+  _ "embed"
+  "html/template"
+  "log"
+  "net/http"
+)
+
+//go:embed mytemplate.html
+var s string
+
+func main() {
+  t, _ := template.New("mytemplate").Parse(s)
+  http.HandleFunc(
+    "/hello1", func(w http.ResponseWriter,
+      r *http.Request,
+    ) {
+      data := struct {
+        text string
+      }{
+        text: "Hello there",
+      }
+      t.Execute(w, data)
+    })
+  log.Fatal(http.ListenAndServe(":8085", nil))
+}
+```
+
+The difference Is that we’ve just created a global variable, `s`, that holds the content of the mytemplate.html files and stores it in the binary when you compile your code using the `//go:embed` build tag directive:
+```go
+_ "embed"
+//go:embed mytemplate.html
+var s string
+t, _ := template.New("mytemplate").Parse(s)
+```
+
+Finally, we create a template with the New method and then parse the string. If you compile the code and run your application from a different folder, you won’t have any errors.
