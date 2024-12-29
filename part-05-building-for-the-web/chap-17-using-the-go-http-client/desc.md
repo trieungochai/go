@@ -14,3 +14,15 @@ There are 2 main ways to use it.
 When using an HTTP client, you can send different types of requests. While there are many types of requests, we will discuss the two main ones: the `GET` request and the `POST` request. For instance, if you wanted to retrieve data from a server, you would send a GET request. When you enter a web address in your web browser, it will send a GET request to the server at that address and then display the data it returns. If you wanted to send data to the server, you would send a `POST` request. If you wanted to log into a website, you would `POST` your login details to the server.
 
 ---
+## Sending a request to a server
+When you want to retrieve data from a web server, you send a `GET` request to the server. When sending a request, the URL will contain information on the resource from which you want data. These include the `protocol`, the `hostname`, the `URI`, and the `query parameters`.
+
+![url-format-breakdown](url-format-breakdown.png)
+
+We can see the following in this example:
+- `Protocol` tells the client how to connect to the server. The 2 most common protocols are `HTTP` and `HTTPS`.
+- `Hostname` is the address of the server we want to connect to.
+- `URI` is the uniform resource identifier, and this tells the server the path to the resource we want.
+- `Query Parameters` tells the server about any additional information it needs. In this example, we have two query parameters. These are filter=latest and os=windows. You will notice they are separated from the URI by ?. This is so the server can parse them from the request. We join any additional parameters to the end of the URI with the & symbol, as seen with the os parameter.
+
+---
