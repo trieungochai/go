@@ -39,3 +39,10 @@ We can see the following in this example:
 Once you have requested data from a server, the data returned can come in various formats.
 
 For example, if you send a request to packtpub.com, it will return HTML data for the Packt website. While HTML data is useful for displaying websites, it isn’t ideal for sending machine-readable data. A common data type used in web APIs is JSON. JSON provides a good structure for data that is both machine-readable and human-readable.
+
+---
+### Sending data to a server
+
+In addition to requesting data from a server, you will also want to send data to a server. The most common way of doing this is via a `POST` request. 
+
+A `POST` request comes in 2 main parts: the URL and the body. The body of a POST request is where you put the data you want to send to the server. A common example of this is a login form. When we send a login request, we POST the body to the URL. The web server then checks that the login details within the body are correct and updates our login status. It responds to the request by telling the client whether it succeeded or not.
