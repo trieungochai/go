@@ -52,3 +52,8 @@ A `POST` request comes in 2 main parts: the URL and the body. The body of a POST
 
 Another common example of data you might want to post to a web server is a file from your local computer. This is how websites allow users to upload their photos and so on. As you can imagine, this is more complex than sending simple form data. To achieve this, the file needs to be read first and then wrapped in a format that the server can understand. It can then be sent in a POST request to the server in what’s called a multipart form.
 
+---
+### Custom request headers
+Sometimes there is more to a request than simply requesting or sending data. This information is stored within the request headers. A very common example of this is authorization headers. When you log into a server, it will respond with an authorization token. In all future requests sent to the server, you would include this token in the request’s headers so the server knows you are the one making the requests.
+
+---
