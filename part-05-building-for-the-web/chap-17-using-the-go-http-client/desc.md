@@ -46,3 +46,9 @@ For example, if you send a request to packtpub.com, it will return HTML data for
 In addition to requesting data from a server, you will also want to send data to a server. The most common way of doing this is via a `POST` request. 
 
 A `POST` request comes in 2 main parts: the URL and the body. The body of a POST request is where you put the data you want to send to the server. A common example of this is a login form. When we send a login request, we POST the body to the URL. The web server then checks that the login details within the body are correct and updates our login status. It responds to the request by telling the client whether it succeeded or not.
+
+---
+### Uploading files in a POST request
+
+Another common example of data you might want to post to a web server is a file from your local computer. This is how websites allow users to upload their photos and so on. As you can imagine, this is more complex than sending simple form data. To achieve this, the file needs to be read first and then wrapped in a format that the server can understand. It can then be sent in a POST request to the server in what’s called a multipart form.
+
