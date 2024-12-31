@@ -46,3 +46,60 @@ The code starts by printing `Start`, then it calls the `hello()` function. Then,
 The important thing to remember is that Go is not a parallel language but concurrent, which means that Goroutines do not work in an independent manner, but each Goroutine is split into smaller parts and each Goroutine runs one of its subparts at a time.
 
 ---
+
+### WaitGroup
+
+```go
+func sum(fromNum, toNum int) int {
+	result := 0
+	for i := fromNum; i <= toNum; i++ {
+		result += i
+	}
+
+	return result
+}
+
+func main() {
+	var batch1, batch2 int
+	go func() {
+		batch1 = sum(1, 100)
+	}()
+	batch2 = sum(1, 10)
+
+	time.Sleep(time.Second)
+	log.Println(batch1, batch2)
+}
+```
+
+In the previous exercise, we used a not-so-elegant method to ensure that the Goroutine ended by making the main Goroutine wait for a second.
+
+The important thing to understand is that even if a program does not explicitly use Goroutines via the go call, it still uses one Goroutine, which is the main routine. When we run our program and create a new Goroutine, we are running 2 Goroutines: the main one and the one we just created. In order to synchronize these 2 Goroutines, Go gives us a function called `WaitGroup`.
+
+`WaitGroup` needs the sync package to be imported. Typical code using the `WaitGroup` will be something like this:
+
+```go
+package main
+
+import "sync"
+
+func main() {
+  wg := &sync.WaitGroup{}
+  wg.Add(1)
+  …………………..
+  wg.Wait()
+  ………….
+  ………….
+}
+```
+
+Here, we create a pointer to a new `WaitGroup`, then we mention that we are adding an asynchronous operation that adds `1` to the group using `wg.Add(1)`. This is essentially a counter holding the number of all concurrent Goroutines that are running. Later, we add the code that will run the concurrent call. At the end, we tell the `WaitGroup` to wait for the Goroutines to end using `wg.Wait()`.
+
+How does the `WaitGroup` know that the routines are complete? We need to explicitly tell the `WaitGroup` about it inside the Goroutine with the following:
+
+```go
+wg.Done()
+```
+
+This must reside at the end of the called Goroutine.
+
+---
