@@ -100,3 +100,39 @@ c := *v
 If this happens, then each function will set `v` to `c + 1`, which means none of the Goroutines are aware of what the other Goroutines are doing and override any changes made by another Goroutine. This problem is called a race condition and happens every time we work with shared resources without taking precautions. Fortunately, we have several ways to prevent this situation and to make sure that the same change is made only once. We will look at these solutions in the next sections, and we will explore the situation we just described in more detail, with a proper solution and race detection.
 
 ---
+### Atomic operations
+Let’s imagine we want to run independent functions again. However, in this case, we want to modify the value held by a variable. We still want to sum the numbers from 1 to 100, but we want to split the work into 2 concurrent Goroutines. We can sum the numbers from 1 to 50 in one routine and the numbers from 51 to 100 in another routine.
+
+At the end, we will still need to receive the value of 5050, but two different routines can add a number at the same time to the same variable. Let’s see an example with only four numbers where we want to sum 1, 2, 3, and 4, and the result is 10.
+
+Think of it like having a variable called `s := 0` and then making a loop where the value of `s` becomes the following:
+
+```go
+s = 0
+s = 1
+s = 3 // (1 + 2)
+s = 6
+s = 10
+```
+
+However, we could also have the following loop. In this case, the order in which the numbers are summed is different:
+
+```go
+s = 0
+s = 1
+s = 4 // 3 + 1, the previous value of 1
+s = 6 // 2 + 4 the previous value of 4
+s = 10
+```
+
+Essentially, this is just the commutative property of the sum, but this gives us a hint that we can split the sum into 2 or more concurrent calls. The problem that arises here is that all the functions need to manipulate the same variable, `s`, which can lead to race conditions and incorrect final values. A race condition happens when two processes change the same variable, and one process overrides the changes made by another process without considering the previous change. Thankfully, we have a package called atomic that allows us to safely modify variables across Goroutines.
+
+This package has some functions for executing simple concurrent safe operations on variables. Let’s look at an example:
+
+```go
+func AddInt32(addr *int32, delta int32) (new int32)
+```
+
+This code takes a pointer to `int32` and modifies it by adding the value it points at to the value of delta. If `addr` holds a value of 2 and delta is 4, after calling this function, `addr` will hold 6.
+
+---
