@@ -54,6 +54,49 @@ Another common example of data you might want to post to a web server is a file 
 
 ---
 ### Custom request headers
+
 Sometimes there is more to a request than simply requesting or sending data. This information is stored within the request headers. A very common example of this is authorization headers. When you log into a server, it will respond with an authorization token. In all future requests sent to the server, you would include this token in the request’s headers so the server knows you are the one making the requests.
+
+---
+### Race conditions
+
+One important thing to consider is that whenever we run multiple functions concurrently, we have no guarantee in what order each instruction in each function will be performed.
+
+In many architectures, this is not a problem. Some functions are not connected in any way with other functions, and whatever a function does in its Goroutine does not affect the actions performed in other Goroutines. This is, however, not always true. The first situation we can think of is when some functions need to share the same parameter. Some functions will read from this parameter, while others will write to this parameter. As we do not know which operation will run first, there is a high likelihood that one function will override the value updated by another function.
+
+Let’s see an example that explains this situation:
+
+```go
+func next(v *int) {
+  c := *v
+  *v = c + 1
+}
+```
+
+This function takes a pointer to an integer as a parameter. It is a pointer because we want to run several Goroutines with the `next()` function and update `v`. If we run the following code, we would expect that a will hold the value `3`:
+
+```go
+a := 0
+next(&a)
+next(&a)
+next(&a)
+```
+
+This is perfectly fine. However, what if we run the following code:
+
+```go
+a := 0
+go next(&a)
+go next(&a)
+go next(&a)
+```
+
+In this case, we might see that a holds `3`, or `2`, or `1`. Why would this happen? Because when a function executes the following statement, the value of `v` might be `0` for all functions running in independent Goroutines:
+
+```go
+c := *v
+```
+
+If this happens, then each function will set `v` to `c + 1`, which means none of the Goroutines are aware of what the other Goroutines are doing and override any changes made by another Goroutine. This problem is called a race condition and happens every time we work with shared resources without taking precautions. Fortunately, we have several ways to prevent this situation and to make sure that the same change is made only once. We will look at these solutions in the next sections, and we will explore the situation we just described in more detail, with a proper solution and race detection.
 
 ---
