@@ -186,3 +186,41 @@ func AddInt32(addr *int32, delta int32) (new int32)
 This code takes a pointer to `int32` and modifies it by adding the value it points at to the value of delta. If `addr` holds a value of 2 and delta is 4, after calling this function, `addr` will hold 6.
 
 ---
+### Invisible concurrency
+
+It is easy to understand that concurrency problems are difficult to visualize as they do not manifest in the same way every time we run a program. That’s why we are focusing on finding ways to synchronize concurrent work.
+
+One easy way to visualize it, however, but that is difficult to use in tests, is to print out each concurrent routine and see the order in which these routines are called.
+
+If we want to see the effects of concurrency and still be able to test it, we could use the atomic package again, this time with strings so that we can build a string containing a message from each Goroutine.
+
+For this scenario, we will use the `sync` package again, but we will not make use of `atomic` operations. Instead, we will use a new struct called `Mutex`. A mutex, short for mutual exclusion, serves as a synchronization primitive in Go, allowing multiple Goroutines to coordinate access to shared resources. When a Goroutine acquires a mutex, it locks it, ensuring exclusive access to the critical section of code. This prevents other Goroutines from accessing the same resource until the mutex is unlocked. Once the critical section execution is complete, the mutex is unlocked, allowing other Goroutines to acquire it and proceed with their execution concurrently. Let’s see how we can use it, we create a mutex like this:
+
+```go
+mtx := sync.Mutex{}
+```
+
+But most of the time, we want to pass a mutex across several functions, so we’d better create a pointer to a mutex:
+
+```go
+mtx := &sync.Mutex{}
+```
+
+This ensures we use the same mutex everywhere. It is important to use the same mutex, but the reason why the mutex must be only one will be clear after analyzing the methods in the Mutex struct. If all Goroutines have `mtx.Lock()` before modifying a value in a critical section of code such as in the following case, then only one Goroutine at a time can modify the variable due to the lock:
+
+```go
+mtx.Lock()
+s = s + 5
+```
+
+The preceding code snippet will lock the execution of all the routines, except the one that will change the variable. At this point, we will add `5` to the current value of `s`. After this, we release the lock using the following command so that any other Goroutine can modify the value of `s`:
+
+```go
+mtx.Unlock()
+```
+
+From now on, any following code will run concurrently. We will see later some better ways to ensure safety when we modify a variable, but, for now, do not worry about adding much code between the `lock/unlock` part. The more code there is between these constructs, the less concurrent your code will be. So, you should lock the execution of the program, add only the logic required to ensure safety, unlock, and then carry on with the execution of the rest of the code, which does not touch the shared variables.
+
+One important thing to notice is that the order of asynchronously performed code can change. This is because Goroutines run independently and you cannot know which one runs first. Furthermore, mutex-protected code can only be run by one Goroutine at a time, and you should then not rely on Goroutines to order things correctly; you might need to order your results afterward if you need a specific order.
+
+---
