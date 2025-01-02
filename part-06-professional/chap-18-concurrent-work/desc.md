@@ -224,3 +224,98 @@ From now on, any following code will run concurrently. We will see later some be
 One important thing to notice is that the order of asynchronously performed code can change. This is because Goroutines run independently and you cannot know which one runs first. Furthermore, mutex-protected code can only be run by one Goroutine at a time, and you should then not rely on Goroutines to order things correctly; you might need to order your results afterward if you need a specific order.
 
 ---
+### Channels
+
+A channel is what the name essentially suggests – it’s something where messages can be piped, and any Goroutine can send or receive messages through a channel. Similar to that of a slice, a channel is created the following way:
+
+```go
+var ch chan int
+ch = make(chan int)
+```
+
+Of course, it is possible to instantiate the channel directly with the following:
+
+```go
+ch := make(chan int)
+```
+
+Just like with slices, we can also do the following:
+
+```go
+ch := make(chan int, 10)
+```
+
+Here, a channel is created with a buffer of 10 items.
+
+A channel can be of any type, such as integer, Boolean, float, and any struct that can be defined, and even slices and pointers, though the last two are generally used less frequently.
+Channels can be passed as parameters to functions, and that’s how different Goroutines can share content. Let’s see how to send a message to a channel:
+
+```go
+ch <- 2
+```
+
+In this case, we send the value of 2 to the preceding ch channel, which is a channel of integers. Of course, trying to send something other than an integer to an integer channel will cause an error.
+
+After sending a message, we need to be able to receive a message from a channel. To do that, we can just do the following:
+
+```go
+<- ch
+```
+
+Doing this ensures that the message is received; however, the message is not stored. It might seem useless to lose the message, but we will see that it might make sense. Nevertheless, we might want to keep the value received from the channel, and we can do so by storing the value in a new variable:
+
+```go
+i := <- ch
+```
+
+Let’s see a simple program that shows us how to use what we’ve learned so far:
+
+```go
+package main
+
+import "log"
+
+func main() {
+  ch := make(chan int, 1)
+  ch <- 1
+  i := <- ch
+  log.Println(i)
+}
+```
+
+This program creates a new channel, pipes the integer 1 in, then reads it, and finally prints out the value of i, which should be 1. This code is not that useful in practice, but with a small change, we can see something interesting. Let’s make the channel unbuffered by changing the channel definition to the following:
+
+```go
+ch := make(chan int)
+```
+
+If you run the code, you will get the following output:
+
+```
+fatal error: all goroutines are asleep - deadlock!
+goroutine 1 [chan send]:
+main.main()
+    /Users/ samcoyle/go/src/github.com/packt-book/Go-Programming---From-Beginner-to-Professional-Second-Edition-/Chapter19/Exercise19.04/main.go:8 +0x59Process finished with exit code 2
+```
+
+The message may be different depending on the version of Go you are using. Also, some errors such as these have been introduced in newer versions. In older versions, though, the compiler was more permissive. In this specific case, the problem is simple: if we do not know how big the channel is, the Goroutines wait indefinitely, and this is called a deadlock. You can think of an unbuffered channel as having a capacity of zero. If we try to put anything into it, it won’t hold the item – instead, it will block until we can pass the item through the channel to a variable, for example. We will see later how to handle them, as they require more than one routine running. With only one Goroutine, after we send the message, we block the execution, and there is no other Goroutine able to receive the message; hence, we have a deadlock.
+
+Before we go further, let’s see one more characteristic of channels, which is that they can be closed. Channels need to be closed when the task they have been created for is finished. To close a channel, type in the following:
+
+```go
+close(ch)
+```
+
+Alternatively, you can defer the closing, as shown in the following code snippet:
+
+```go
+defer close(ch)
+for i := 0; i < 100; i++ {
+  ch <- i
+}
+return
+```
+
+In this case, after the return statement, the channel is closed as the closing is deferred to run after the return statement.
+
+---
