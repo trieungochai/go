@@ -319,3 +319,144 @@ return
 In this case, after the return statement, the channel is closed as the closing is deferred to run after the return statement.
 
 ---
+### Concurrency patterns
+
+The way we organize our concurrent work is pretty much the same in every application.
+
+We will look at one common pattern that is called a `pipeline`, where we have a source, and then messages are sent from one Goroutine to another until the end of the line, until all Goroutines in the pipeline have been utilized. Another pattern is the `fan out/ fan in` pattern where, work is sent to several Goroutines reading from the same channel.
+
+All these patterns, however, are generally made of a source stage, which is the first stage of the pipeline and the one that gathers, or sources, the data, then some internal steps, and at the end, a `sink`, which is the final stage where the results of the process from all the other routines get merged. It is known as a sink because all the data sinks into it.
+
+---
+### Buffers
+There are channels with a defined length and channels with an undetermined length:
+
+```go
+ch1 := make(chan int)
+ch2 := make(chan int, 10)
+```
+
+A buffer is like a container that needs to be filled with some content, so you prepare it when you expect to receive that content. We said that operations on channels are blocking operations, which means the execution of the Goroutine will stop and wait whenever you try to read a message from the channel.
+
+```go
+i := <- ch
+```
+
+We know that before we can carry on with the execution of the code, we need to receive a message. However, there is something more about this blocking behavior. If the channel does not have a buffer, the Goroutine is blocked as well. It is not possible to write to a channel or to receive a channel. We’ll get a better idea of this with an example, and we will show how to use unbuffered channels to achieve the same result so that you will get a better understanding of what you’ve seen in the previous exercises.
+
+```go
+ch := make(chan int, 2)
+ch <- 1
+ch <- 2
+fmt.Println(<-ch)
+fmt.Println(<-ch)
+```
+
+If you put this code inside a function, you will see that it works perfectly and will display something as follows:
+
+```
+1
+2
+```
+
+But what if you add an extra read? Let’s take a look:
+
+```go
+ch := make(chan int, 2)
+ch <- 1
+ch <- 2
+ch <- 3
+fmt.Println(<-ch)
+fmt.Println(<-ch)
+```
+
+In this case, you will see an error:
+
+```
+fatal error: all goroutines are asleep - deadlock!
+goroutine 1 [chan send]:
+main.main()
+    /tmp/sandbox223984687/prog.go:9 +0xa0
+```
+
+This happens because the routine running this code is blocked after the buffer of size 2 is filled with a data size of 2 coming from the read operations (commonly referred to as reads), which results in the buffer being filled with data, which, in this case, has 2 data, and the buffer has a size of 2. We can increase the buffer:
+
+```go
+ch := make(chan int, 3)
+```
+
+And it will work again; we are just not displaying the third number.
+
+Now, let’s see what happens if we remove the buffer. Try, and again you will see the previous error. This happens because the buffer is always full and the routine is blocked. An unbuffered channel is equivalent to the following:
+
+```go
+ch := make(chan int, 0)
+```
+
+We’ve used unbuffered channels without any issues. Let’s see an example of how to use them:
+
+```go
+package main
+
+import "fmt"
+
+func readThem(ch chan int) {
+  for {
+    fmt.Println(<- ch)
+  }
+}
+
+func main() {
+  ch := make(chan int)
+  go readThem(ch)
+  ch <- 1
+  ch <- 2
+  ch <- 3
+}
+```
+
+If you run this program, you should see something as follows:
+```
+1
+2
+3
+```
+
+But there is a chance you could see fewer numbers. If you run this on the Go Playground, you should see this result, but if you run it on your machine, you might see fewer numbers. Try sending more numbers:
+
+```go
+ch <- 4
+ch <- 5
+```
+
+At each addition, run your program; you might not see all the numbers. Basically, there are two Goroutines: one is reading messages from an unbuffered channel, and the main Goroutine is sending these messages through the same channel. Due to this, there is no deadlock. This shows that we can make use of unbuffered channels for read and write operations flawlessly by using two Goroutines. We still have, however, an issue with not all numbers showing up, which we can fix in the following way:
+
+```go
+package main
+
+import "fmt"
+import "sync"
+
+func readThem(ch chan int, wg *sync.WaitGroup) {
+  for i := range ch {
+    fmt.Println(i)
+  }
+  wg.Done()
+}
+
+func main() {
+  wg := &sync.WaitGroup{}
+  wg.Add(1)
+  ch := make(chan int)
+  go readThem(ch, wg)
+  ch <- 1
+  ch <- 2
+  ch <- 3
+  ch <- 4
+  ch <- 5
+  close(ch)
+  wg.Wait()
+}
+```
+
+Here, we iterate over the channel inside the Goroutine, and we stop as soon as the channel gets closed. This is because when the channel gets closed, the range stops iterating. The channel gets closed in the main Goroutine after everything is sent. We make use of a WaitGroup here to know that everything is completed. If we were not closing the channel in the main() function, we would be in the main Goroutine, which would terminate before the second Goroutine would print all the numbers. There is another way, however, to wait for the execution of the second Goroutine to be completed, and this is with explicit notification, which we will see in the next exercise. One thing to notice is that even though we close the channel, the messages all still arrive at the receiving routine. This is because you can receive messages from a closed channel; you just can’t send more.
