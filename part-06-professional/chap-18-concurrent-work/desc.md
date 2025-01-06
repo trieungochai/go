@@ -516,3 +516,20 @@ Essentially, an HTTP server runs as a single program and listens to requests in 
 However, what you must think of is how to not create race conditions when you want to keep a state. Most HTTP servers are stateless, especially if you’re building a microservice environment. However, you might want to keep track of things with a counter, or you might actually work with TCP servers, a gaming server, or a chat app where you need to keep the state and gather information from all the peers. The techniques you’ve learned in this chapter allow you to do so. You can use a mutex to make sure a counter is thread-safe or, better, routine-safe across all requests.
 
 ---
+
+### Methods as Goroutines
+
+So far, you’ve only seen functions used as Goroutines, but methods are simple functions with a receiver; hence, they can be used asynchronously too. This can be useful if you want to share some properties of your struct, such as for your counter in an HTTP server.
+With this technique, you can encapsulate the channels you use across several Goroutines belonging to the same instance of a struct without having to pass these channels everywhere.
+
+Here is a simple example of how to do that:
+
+```go
+type MyStruct struct {}
+func (m MyStruct) doIt()
+. . . . . .
+ms := MyStruct{}
+go ms.doIt()
+```
+
+---
