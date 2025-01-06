@@ -186,6 +186,7 @@ func AddInt32(addr *int32, delta int32) (new int32)
 This code takes a pointer to `int32` and modifies it by adding the value it points at to the value of delta. If `addr` holds a value of 2 and delta is 4, after calling this function, `addr` will hold 6.
 
 ---
+
 ### Invisible concurrency
 
 It is easy to understand that concurrency problems are difficult to visualize as they do not manifest in the same way every time we run a program. That’s why we are focusing on finding ways to synchronize concurrent work.
@@ -224,6 +225,7 @@ From now on, any following code will run concurrently. We will see later some be
 One important thing to notice is that the order of asynchronously performed code can change. This is because Goroutines run independently and you cannot know which one runs first. Furthermore, mutex-protected code can only be run by one Goroutine at a time, and you should then not rely on Goroutines to order things correctly; you might need to order your results afterward if you need a specific order.
 
 ---
+
 ### Channels
 
 A channel is what the name essentially suggests – it’s something where messages can be piped, and any Goroutine can send or receive messages through a channel. Similar to that of a slice, a channel is created the following way:
@@ -319,6 +321,7 @@ return
 In this case, after the return statement, the channel is closed as the closing is deferred to run after the return statement.
 
 ---
+
 ### Concurrency patterns
 
 The way we organize our concurrent work is pretty much the same in every application.
@@ -328,7 +331,9 @@ We will look at one common pattern that is called a `pipeline`, where we have a 
 All these patterns, however, are generally made of a source stage, which is the first stage of the pipeline and the one that gathers, or sources, the data, then some internal steps, and at the end, a `sink`, which is the final stage where the results of the process from all the other routines get merged. It is known as a sink because all the data sinks into it.
 
 ---
+
 ### Buffers
+
 There are channels with a defined length and channels with an undetermined length:
 
 ```go
@@ -416,6 +421,7 @@ func main() {
 ```
 
 If you run this program, you should see something as follows:
+
 ```
 1
 2
@@ -460,3 +466,43 @@ func main() {
 ```
 
 Here, we iterate over the channel inside the Goroutine, and we stop as soon as the channel gets closed. This is because when the channel gets closed, the range stops iterating. The channel gets closed in the main Goroutine after everything is sent. We make use of a WaitGroup here to know that everything is completed. If we were not closing the channel in the main() function, we would be in the main Goroutine, which would terminate before the second Goroutine would print all the numbers. There is another way, however, to wait for the execution of the second Goroutine to be completed, and this is with explicit notification, which we will see in the next exercise. One thing to notice is that even though we close the channel, the messages all still arrive at the receiving routine. This is because you can receive messages from a closed channel; you just can’t send more.
+
+---
+
+### Some more common practices
+
+In all these examples, we’ve created channels and passed them through, but functions can also return channels and spin up new Goroutines. Here is an example:
+
+```go
+func doSomething() chan int {
+  ch := make(chan int)
+  go func() {
+    for i := range ch {
+      log.Println(i)
+    }
+  }()
+  return ch
+}
+```
+
+In this case, we can actually have the following in our `main()` function:
+
+```go
+ch := doSomething()
+ch <- 1
+ch <- 4
+```
+
+We do not need to call the `doSomething` function as a Goroutine because it will spin up a new one by itself.
+
+Some functions can also return or accept, such as this one:
+
+```go
+<- chan int
+```
+
+Here’s another example:
+
+```go
+chan <- int
+```
