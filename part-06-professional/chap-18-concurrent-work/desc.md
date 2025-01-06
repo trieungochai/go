@@ -506,3 +506,13 @@ Here’s another example:
 ```go
 chan <- int
 ```
+
+---
+
+### HTTP servers
+
+Essentially, an HTTP server runs as a single program and listens to requests in the main Goroutine. However, when a new HTTP request is made by one of the clients, a new Goroutine is created that handles that specific request. You have not done it manually, nor have you managed the server’s channels, but this is how it works internally. You do not actually need to send anything across the different Goroutines because each Goroutine and each request is independent since they have been made by different people.
+
+However, what you must think of is how to not create race conditions when you want to keep a state. Most HTTP servers are stateless, especially if you’re building a microservice environment. However, you might want to keep track of things with a counter, or you might actually work with TCP servers, a gaming server, or a chat app where you need to keep the state and gather information from all the peers. The techniques you’ve learned in this chapter allow you to do so. You can use a mutex to make sure a counter is thread-safe or, better, routine-safe across all requests.
+
+---
