@@ -562,3 +562,11 @@ As you can see, there are several calls, and ctx is passed through, but we do no
 ### Concurrent work with sync.Cond
 
 Efficient coordination between different Goroutines is crucial to ensure smooth execution and resource management. Another powerful synchronization primitive provided by the Go standard library is `sync.Cond` (condition). The Cond type is associated with sync.Mutex and provides a way for Goroutines to wait for or signal the occurrence of a particular condition or changes in shared data.
+
+---
+
+### The thread-safe map
+
+In concurrent programming, safely managing access to shared data structures is crucial to avoid race conditions and ensure consistency. Go’s standard library provides a powerful tool for concurrent map access – the `sync.Map` type. Unlike the regular Map type, sync.Map is specifically designed to be used concurrently without the need for external synchronization.
+
+The `sync.Map` type is part of the sync package and provides fine-grained locking internally to allow multiple readers and a single writer to access a map concurrently without blocking operations. This makes it suitable for scenarios where you have multiple Goroutines that need to read or modify a map concurrently.
