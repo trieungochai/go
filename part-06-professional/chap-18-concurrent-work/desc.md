@@ -533,3 +533,28 @@ go ms.doIt()
 ```
 
 ---
+
+### Go context package
+
+We’ve seen how to run concurrent code and run it until it has finished, waiting for the completion of some processing through WaitGroup or channel reads. You might have seen in some Go code, especially code related to HTTP calls, some parameters from the context package, and you might have wondered what it is and why it is used.
+
+All the code we’ve written here is running on our machines and does not pass through the internet, so we hardly have any delay due to latency; however, in situations involving HTTP calls, we might encounter servers that do not respond and get stuck.
+
+In such cases, how do we stop our call if the server does not respond after a while? How do we stop the execution of a routine that runs independently when an event occurs? Well, we have several ways, but a standard one is to use contexts, and we will see now how they work. A context is a variable that is passed through a series of calls and might hold some values or may be empty. It is a container, but it is not used to send values across functions; you can use normal integers, strings, and so on for this purpose.
+
+A context is passed through to get back control of what is happening:
+
+```go
+func doIt(ctx context.Context, a int, b string) {
+  fmt.Println(b)
+  doThat(ctx, a*2)
+}
+func doThat(ctx context.Context, a int) {
+  fmt.Println(a)
+  doMore(ctx)
+}
+```
+
+As you can see, there are several calls, and ctx is passed through, but we do not do anything with it. However, it can contain data, and it contains functions that we can use to stop the execution of the current Goroutine.
+
+---
