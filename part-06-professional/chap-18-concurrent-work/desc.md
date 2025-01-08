@@ -558,3 +558,7 @@ func doThat(ctx context.Context, a int) {
 As you can see, there are several calls, and ctx is passed through, but we do not do anything with it. However, it can contain data, and it contains functions that we can use to stop the execution of the current Goroutine.
 
 ---
+
+### Concurrent work with sync.Cond
+
+Efficient coordination between different Goroutines is crucial to ensure smooth execution and resource management. Another powerful synchronization primitive provided by the Go standard library is `sync.Cond` (condition). The Cond type is associated with sync.Mutex and provides a way for Goroutines to wait for or signal the occurrence of a particular condition or changes in shared data.
